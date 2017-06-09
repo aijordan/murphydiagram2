@@ -14,8 +14,9 @@
 #'   \code{\link{c.murphydiag}},
 #'   \code{\link{[.murphydiag}},
 #'   \code{\link{plot.murphydiag_diff}}
+#'   
 #' 
-#' @export murphydiag_diff
+#' @export
 murphydiag_diff <- function(m1, m2 = NULL) {
   stopifnot(inherits(m1, "murphydiag"))
   m <- c(m1, m2)
@@ -27,11 +28,9 @@ murphydiag_diff <- function(m1, m2 = NULL) {
 
 #' @describeIn murphydiag_diff
 #' 
-#' @usage ## Alternative via S3 method for class 'murphydiag'
-#' - m1
-#' m1 - m2
+#' @usage \method{-}{murphydiag}(m1, m2)
 #' 
-#' @export -.murphydiag
+#' @export
 `-.murphydiag` <- function(m1, m2 = NULL) {
   m <- c(m1, m2)
   if (!identical(length(m$x), 2L))

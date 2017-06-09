@@ -8,7 +8,8 @@
 \usage{
 murphydiag(object, ...)
 
-\method{murphydiag}{default}(x, y, type, level = NULL, xnames = NULL, ...)
+\method{murphydiag}{default}(object, y, type, level = NULL, xnames = NULL,
+  ...)
 
 \method{murphydiag}{lm}(object, newdata = NULL, newy = NULL,
   type = "mean", xnames = NULL, ...)
@@ -17,9 +18,6 @@ murphydiag(object, ...)
 \item{object}{an object used to select a method.}
 
 \item{...}{further arguments passed to or from other methods.}
-
-\item{x}{an object convertible by \code{\link{as.data.frame}}
-containing forecasts.}
 
 \item{y}{an object convertible by \code{\link{as.vector}}
 containing observations.}

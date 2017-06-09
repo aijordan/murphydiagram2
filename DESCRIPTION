@@ -1,10 +1,13 @@
 Package: murphydiagram2
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2017-06-07
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Title: Murphy Diagrams for Forecast Comparisons
+Version: 0.1
+Date: 2017-06-09
+Author: Alexander Jordan, Fabian Krueger
+Maintainer: Alexander Jordan <mail@soon.tm>
+Description: Score calculation and printing methods for
+  Murphy diagrams (Ehm, Gneiting, Jordan, Krueger (2016).
+  'Of quantiles and expectiles: consistent scoring functions,
+  Choquet representations and forecast rankings').
+License: GPL-3
 RoxygenNote: 6.0.1

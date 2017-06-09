@@ -4,11 +4,11 @@
 \alias{plot.murphydiag}
 \title{Plotting Murphy diagram objects}
 \usage{
-\method{plot}{murphydiag}(m, type = "l", xlim = NULL, ylim = NULL,
+\method{plot}{murphydiag}(x, type = "l", xlim = NULL, ylim = NULL,
   xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
-\item{m}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{an object inheriting from the class \code{murphydiag}.}
 
 \item{type}{character string (length 1 vector) or vector of 1-character
     strings indicating the type of plot for each

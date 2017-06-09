@@ -7,9 +7,7 @@
 \usage{
 murphydiag_diff(m1, m2 = NULL)
 
-## Alternative via S3 method for class 'murphydiag'
-- m1
-m1 - m2
+\method{-}{murphydiag}(m1, m2)
 }
 \arguments{
 \item{m1}{an object inheriting from class \code{murphydiag}.}
@@ -31,8 +29,8 @@ returns a \code{murphydiag_diff} object to be used
 }}
 
 \seealso{
-\code{\link{plot.murphydiag_diff}},
-  \code{\link{murphydiag}},
+\code{\link{murphydiag}},
   \code{\link{c.murphydiag}},
-  \code{\link{[.murphydiag}}
+  \code{\link{[.murphydiag}},
+  \code{\link{plot.murphydiag_diff}}
 }

@@ -13,8 +13,8 @@
 An object inheriting from the \code{murphydiag} class.
 }
 \description{
-Put 'em together, yo
+Put 'em together
 }
 \seealso{
-\code{\link{[.murphydiag}}
+\code{\link{[.murphydiag}}, \code{\link{murphydiag}}
 }

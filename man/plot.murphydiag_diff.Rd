@@ -4,11 +4,11 @@
 \alias{plot.murphydiag_diff}
 \title{Plotting Murphy diagram difference objects}
 \usage{
-\method{plot}{murphydiag_diff}(m, type = "l", xlim = NULL, ylim = NULL,
+\method{plot}{murphydiag_diff}(x, type = "l", xlim = NULL, ylim = NULL,
   main = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
-\item{m}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{an object inheriting from the class \code{murphydiag}.}
 
 \item{type}{character string (length 1 vector) or vector of 1-character
     strings indicating the type of plot for each
@@ -21,6 +21,8 @@
 \item{xlim}{ranges of x and y axes, as in \code{\link{plot}}.}
 
 \item{ylim}{ranges of x and y axes, as in \code{\link{plot}}.}
+
+\item{main}{an overall title for the plot: see \code{\link{title}}.}
 
 \item{xlab}{titles for x and y axes, as in \code{\link{plot}}.}
 

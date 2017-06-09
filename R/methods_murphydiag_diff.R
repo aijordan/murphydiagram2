@@ -2,20 +2,23 @@
 #' 
 #' Plaster them walls
 #' 
-#' @param m an object inheriting from the class \code{murphydiag}.
+#' @param x an object inheriting from the class \code{murphydiag}.
+#' @param main an overall title for the plot: see \code{\link{title}}.
 #' @inheritParams graphics::matplot
 #' 
 #' @seealso \code{\link{murphydiag_diff}},
 #'   \code{\link{-.murphydiag}},
 #'   \code{\link{[.murphydiag}}
 #' 
-#' @export plot.murphydiag_diff
-plot.murphydiag_diff <- function(m, type = "l",
+#' @importFrom graphics abline matplot
+#' @export
+plot.murphydiag_diff <- function(x, type = "l",
                                  xlim = NULL,
                                  ylim = NULL,
                                  main = NULL,
                                  xlab = NULL,
                                  ylab = NULL, ...) {
+  m <- x
   class(m) <- "murphydiag"
   if (is.null(main)) main <- sprintf("%s vs %s", names(m$x)[1L], names(m$x)[2L])
   if (is.null(xlab)) xlab <- expression(paste("Parameter ", theta))

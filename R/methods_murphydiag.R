@@ -8,7 +8,7 @@
 #' 
 #' @seealso \code{\link{[.murphydiag}}, \code{\link{murphydiag}}
 #' 
-#' @export c.murphydiag
+#' @export
 c.murphydiag <- function(...) {
   input <- list(...)
   input <- input[!sapply(input, is.null)]
@@ -60,7 +60,7 @@ c.murphydiag <- function(...) {
 #' 
 #' @seealso \code{\link{c.murphydiag}}
 #' 
-#' @export [.murphydiag
+#' @export
 `[.murphydiag` <- function(m, j) {
   m$x <- m$x[, j, drop = FALSE]
   m
@@ -71,19 +71,21 @@ c.murphydiag <- function(...) {
 #' 
 #' Plaster them walls
 #' 
-#' @param m an object inheriting from the class \code{murphydiag}.
+#' @param x an object inheriting from the class \code{murphydiag}.
 #' @inheritParams graphics::matplot
 #' 
 #' @seealso \code{\link{murphydiag}},
 #'   \code{\link{c.murphydiag}},
 #'   \code{\link{[.murphydiag}}
 #' 
-#' @export plot.murphydiag
-plot.murphydiag <- function(m, type = "l",
+#' @importFrom graphics abline matplot
+#' @export
+plot.murphydiag <- function(x, type = "l",
                             xlim = NULL,
                             ylim = NULL,
                             xlab = NULL,
                             ylab = NULL, ...) {
+  m <- x
   if (is.null(xlab)) xlab <- expression(paste("Parameter ", theta))
   if (is.null(ylab)) ylab <- "mean score"
 

@@ -16,13 +16,11 @@
 #'       containing \code{type} and \code{level} (optional).
 #'   }
 #'
-#' @export murphydiag
+#' @export
 murphydiag <- function(object, ...) UseMethod("murphydiag")
 
 #' @describeIn murphydiag
 #' 
-#' @param x an object convertible by \code{\link{as.data.frame}}
-#'   containing forecasts.
 #' @param y an object convertible by \code{\link{as.vector}}
 #'   containing observations.
 #' @param type a string specifying the type of forecast,
@@ -37,9 +35,10 @@ murphydiag <- function(object, ...) UseMethod("murphydiag")
 #'   \code{\link{[.murphydiag}},
 #'   \code{\link{plot.murphydiag}}
 #' 
-#' @export murphydiag.default
-murphydiag.default <- function(x, y, type, level = NULL,
+#' @export
+murphydiag.default <- function(object, y, type, level = NULL,
                                xnames = NULL, ...) {
+  x <- object
   rval <- list(
     x = as.data.frame(x),
     y = as.vector(y, mode = "numeric"),
@@ -70,8 +69,9 @@ murphydiag.default <- function(x, y, type, level = NULL,
 #'   for \code{newy}.
 #' @param newy optional; a vector of observations
 #'   corresponding to forecasts based on \code{newdata}.
-#'   
-#' @export murphydiag.lm
+#'
+#' @importFrom stats predict
+#' @export
 murphydiag.lm <- function(object,
                           newdata = NULL,
                           newy = NULL,
