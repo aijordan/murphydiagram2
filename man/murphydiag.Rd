@@ -4,6 +4,7 @@
 \alias{murphydiag}
 \alias{murphydiag.default}
 \alias{murphydiag.lm}
+\alias{murphydiag.rq}
 \title{Murphy diagram object}
 \usage{
 murphydiag(object, ...)
@@ -13,6 +14,9 @@ murphydiag(object, ...)
 
 \method{murphydiag}{lm}(object, newdata = NULL, newy = NULL,
   type = "mean", xnames = NULL, ...)
+
+\method{murphydiag}{rq}(object, newdata = NULL, newy = NULL,
+  xnames = NULL, ...)
 }
 \arguments{
 \item{object}{an object used to select a method.}
@@ -59,6 +63,8 @@ a \code{default} method, and additional methods for classes
 \item \code{default}: 
 
 \item \code{lm}: 
+
+\item \code{rq}: 
 }}
 
 \seealso{

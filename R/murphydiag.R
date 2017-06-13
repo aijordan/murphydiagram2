@@ -90,3 +90,30 @@ murphydiag.lm <- function(object,
   
   murphydiag(predict(object, newdata), newy, type, xnames = xnames)
 }
+
+#' @describeIn murphydiag
+#' 
+#' @export
+murphydiag.rq <- function(object,
+                          newdata = NULL,
+                          newy = NULL,
+                          xnames = NULL, ...) {
+  if (is.null(xnames)) xnames <- "rq"
+  if (is.null(newy) || is.null(newdata)) {
+    if (!is.null(newy)) warning("ignored 'newy' since 'newdata' is NULL")
+    if (!is.null(newdata)) warning("ignored 'newdata' since 'newy' is NULL")
+    newy <- object$y
+    newdata <- NULL
+  }
+  # Use type "median" for 50pct quantile (matters only for scale factor)
+  type <- ifelse(object$tau == 0.5, "median", "quantile")
+  level <- NULL
+  if (type == "quantile") level <- object$tau
+  # Output (case distinction since rq does not accept newdata = NULL)
+  if (is.null(newdata)){
+    murphydiag(predict(object), newy, type, level = level, xnames = xnames)
+  } else {
+    murphydiag(predict(object, newdata), newy, type, level = level, xnames = xnames)
+  }
+}
+
