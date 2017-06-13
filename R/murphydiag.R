@@ -93,6 +93,7 @@ murphydiag.lm <- function(object,
 
 #' @describeIn murphydiag
 #' 
+#' @importFrom quantreg predict.rq
 #' @export
 murphydiag.rq <- function(object,
                           newdata = NULL,
