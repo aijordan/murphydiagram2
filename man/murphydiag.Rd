@@ -5,6 +5,7 @@
 \alias{murphydiag.default}
 \alias{murphydiag.lm}
 \alias{murphydiag.rq}
+\alias{murphydiag.randomForest}
 \title{Murphy diagram object}
 \usage{
 murphydiag(object, ...)
@@ -16,6 +17,9 @@ murphydiag(object, ...)
   type = "mean", xnames = NULL, ...)
 
 \method{murphydiag}{rq}(object, newdata = NULL, newy = NULL,
+  xnames = NULL, ...)
+
+\method{murphydiag}{randomForest}(object, newdata = NULL, newy = NULL,
   xnames = NULL, ...)
 }
 \arguments{
@@ -65,6 +69,8 @@ a \code{default} method, and additional methods for classes
 \item \code{lm}: 
 
 \item \code{rq}: 
+
+\item \code{randomForest}: 
 }}
 
 \seealso{
