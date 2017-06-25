@@ -3,7 +3,7 @@
 #' \code{murphydiag} constructs and returns an object of
 #' class \code{murphydiag}. It is a generic function with
 #' a \code{default} method, and additional methods for classes
-#' \code{lm}, \code{XXX}, \code{YYY}.
+#' \code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
 #' 
 #' @param object an object used to select a method.
 #' @param ... further arguments passed to or from other methods.
@@ -71,6 +71,7 @@ murphydiag.default <- function(object, y, type, level = NULL,
 #'   corresponding to forecasts based on \code{newdata}.
 #'
 #' @importFrom stats predict
+#' 
 #' @export
 murphydiag.lm <- function(object,
                           newdata = NULL,
