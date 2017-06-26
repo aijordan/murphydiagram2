@@ -60,19 +60,18 @@ The output is an object of class \code{murphydiag},
 \code{murphydiag} constructs and returns an object of
 class \code{murphydiag}. It is a generic function with
 a \code{default} method, and additional methods for classes
-\code{lm}, \code{XXX}, \code{YYY}.
+\code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
 }
-\section{Methods (by class)}{
+\details{
+In the default version, the user specifies all relevant information (forecasts, realizations, 
+information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
+from a few other packages:
 \itemize{
-\item \code{default}: 
-
-\item \code{lm}: 
-
-\item \code{rq}: 
-
-\item \code{randomForest}: 
-}}
-
+\item \dQuote{lm}, see \code{\link[stats]{lm}}
+\item \dQuote{rq}, see \code{\link[quantreg]{rq}}
+\item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
+}
+}
 \seealso{
 \code{\link{murphydiag_diff}},
   \code{\link{c.murphydiag}},
