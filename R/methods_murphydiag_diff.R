@@ -11,7 +11,8 @@
 #'   \code{\link{-.murphydiag}},
 #'   \code{\link{[.murphydiag}}
 #' 
-#' @importFrom graphics abline matplot
+#' @importFrom graphics abline matplot lines polygon
+#' @importFrom stats qnorm sd
 #' @importFrom magrittr "%>%"
 #' @export
 plot.murphydiag_diff <- function(x, type = "l",
@@ -66,11 +67,11 @@ plot.murphydiag_diff <- function(x, type = "l",
     ylim <- range(yy_lb, yy_ub)
   }
   
-  matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
+  matplot(xx, yy, type = "n", xlim = xlim, ylim = ylim,
           main = main, xlab = xlab, ylab = ylab, ...)
   polygon(c(xx, rev(xx)), c(yy_ub, rev(yy_lb)), col = "grey", 
           border = NA)
-  lines(xx, yy)
+  lines(xx, yy, type = type)
   abline(h = 0, lty = 2)
   
   invisible(m)
