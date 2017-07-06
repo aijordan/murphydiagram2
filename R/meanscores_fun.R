@@ -8,14 +8,15 @@
 #' @param y an object convertible by \code{as.vector}
 #'   containing observations.
 #' @param level a single value in (0, 1).
+#' @aliases ms_fun, ms_mean_fun, ms_prob_fun, ms_median_fun, ms_quant_fun, ms_expect_fun, fs_fun, fs_mean_fun, fs_prob_fun, fs_median_fun, fs_quant_fun, fs_expect_fun
 #'   
 #' @return hubba
 #' 
-#' @name meanscores_fun
+#' @name scores_fun
 NULL
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_fun
 ms_fun <- function(m) {
   stopifnot(inherits(m, "murphydiag"))
@@ -28,31 +29,31 @@ ms_fun <- function(m) {
 }
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_mean_fun
 ms_mean_fun <- function(x, y)
   function(t, right = FALSE) ms_mean(t, x, y, right)
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_prob_fun
 ms_prob_fun <- function(x, y)
   function(t, right = FALSE) ms_prob(t, x, y, right)
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_median_fun
 ms_median_fun <- function(x, y)
   function(t, right = FALSE) ms_median(t, x, y, right)
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_quant_fun
 ms_quant_fun <- function(x, y, level)
   function(t, right = FALSE) ms_quant(t, x, y, level, right)
 
 
-#' @rdname meanscores_fun
+#' @rdname scores_fun
 #' @export ms_expect_fun
 ms_expect_fun <- function(x, y, level)
   function(t, right = FALSE) ms_expect(t, x, y, level, right)
