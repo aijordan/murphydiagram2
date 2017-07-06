@@ -1,7 +1,7 @@
 #' @rdname scores
 #' @export fs_mean
 fs_mean <- function(t, x, y, right = FALSE)
-  2 * fs_expect(t, x, y, 0.5, right)
+  lapply(fs_expect(t, x, y, 0.5, right), function(z) 2*z)
 
 
 #' @rdname scores
@@ -12,14 +12,14 @@ fs_prob <- function(t, x, y, right = FALSE) {
   x[x < 0 | x > 1] <- NaN
   y[y != 0 & y != 1] <- NaN
   
-  2 * fs_expect(t, x, y, 0.5, right)
+  lapply(fs_expect(t, x, y, 0.5, right), function(z) 2*z)
 }
 
 
 #' @rdname scores
 #' @export fs_median
 fs_median <- function(t, x, y, right = FALSE)
-  2 * fs_quant(t, x, y, 0.5, right)
+  lapply(fs_quant(t, x, y, 0.5, right), function(z) 2*z)
 
 
 #' @rdname scores
@@ -64,7 +64,7 @@ fs_expect <- function(t, x, y, level, right = FALSE) {
     tx <- if (right) t <= x else t < x
     ty <- if (right) t <= y else t < y
     I <- ((y < x) - level) * abs(t - y)
-    colMeans(I * (tx - ty))
+    (I * (tx - ty))
   })
   rval
 }
