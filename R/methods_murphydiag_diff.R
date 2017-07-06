@@ -11,6 +11,7 @@
 #'   \code{\link{[.murphydiag}}
 #' 
 #' @importFrom graphics abline matplot
+#' @importFrom magrittr "%>%"
 #' @export
 plot.murphydiag_diff <- function(x, type = "l",
                                  xlim = NULL,
@@ -36,13 +37,14 @@ plot.murphydiag_diff <- function(x, type = "l",
   tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
   tt <- sort(unique(tt))
   
-  msfun <- ms_fun(m)
+  fsfun <- fs_fun(m)
   tl <- c(xlim[1L], tt)
   tr <- c(tt, xlim[2L])
-  yl <- msfun(tl, right = FALSE)
-  yl <- yl[, 1L] - yl[, 2L]
-  yr <- msfun(tr, right = TRUE)
-  yr <- yr[, 1L] - yr[, 2L]
+  yl_main <- fsfun(tl, right = FALSE)
+  yr_main <- fsfun(tr, right = TRUE)
+  
+  yl <- yl_main %>% sapply(colMeans) %>% t %>% (function(z) z[, 1L] - z[, 2L])
+  yr <- yr_main %>% sapply(colMeans) %>% t %>% (function(z) z[, 1L] - z[, 2L])
   
   n <- length(tt) + 1L
   interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
