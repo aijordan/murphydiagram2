@@ -1,6 +1,6 @@
-#' Mean score function constructors
+#' Score function constructors
 #' 
-#' Creating functions for the computation of mean elementary scores.
+#' Creating functions for the computation of elementary scores.
 #' 
 #' @param m an object inheriting from class "murphydiag".
 #' @param x an object convertible by \code{as.matrix}
@@ -10,7 +10,7 @@
 #' @param level a single value in (0, 1).
 #' @aliases ms_fun, ms_mean_fun, ms_prob_fun, ms_median_fun, ms_quant_fun, ms_expect_fun, fs_fun, fs_mean_fun, fs_prob_fun, fs_median_fun, fs_quant_fun, fs_expect_fun
 #'   
-#' @return hubba
+#' @return Function which gives the elementary score as a function of the threshold parameter \code{t}.
 #' 
 #' @name scores_fun
 NULL

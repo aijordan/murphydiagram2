@@ -26,7 +26,7 @@
 \alias{ms_median_fun}
 \alias{ms_quant_fun}
 \alias{ms_expect_fun}
-\title{Mean score function constructors}
+\title{Score function constructors}
 \usage{
 fs_fun(m)
 
@@ -64,8 +64,8 @@ containing observations.}
 \item{level}{a single value in (0, 1).}
 }
 \value{
-hubba
+Function which gives the elementary score as a function of the threshold parameter \code{t}.
 }
 \description{
-Creating functions for the computation of mean elementary scores.
+Creating functions for the computation of elementary scores.
 }
