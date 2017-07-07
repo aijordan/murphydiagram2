@@ -5,7 +5,8 @@
 \title{Plotting Murphy diagram difference objects}
 \usage{
 \method{plot}{murphydiag_diff}(x, type = "l", xlim = NULL, ylim = NULL,
-  main = NULL, xlab = NULL, ylab = NULL, level_ci = 0.95, ...)
+  main = NULL, xlab = NULL, ylab = NULL, level_ci = 0.95, sd_lags = 0,
+  ...)
 }
 \arguments{
 \item{x}{an object inheriting from the class \code{murphydiag}.}
@@ -29,6 +30,8 @@
 \item{ylab}{titles for x and y axes, as in \code{\link{plot}}.}
 
 \item{level_ci}{level for confidence interval}
+
+\item{sd_lags}{number of autocovariances to use for confidence intervals (defaults to zero; values 1, 2, 3, ... may make sense for time series data. Set to \code{NULL} for data-driven selection.)}
 
 \item{...}{Graphical parameters (see \code{\link{par}}) and any further
     arguments of \code{plot}, typically \code{\link{plot.default}}, may also be

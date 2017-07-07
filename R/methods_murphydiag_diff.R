@@ -41,6 +41,7 @@ hac_sd <- function(x, k = 0){
 #' @param x an object inheriting from the class \code{murphydiag}.
 #' @param main an overall title for the plot: see \code{\link{title}}.
 #' @param level_ci level for confidence interval
+#' @param sd_lags number of autocovariances to use for confidence intervals (defaults to zero; values 1, 2, 3, ... may make sense for time series data. Set to \code{NULL} for data-driven selection.)
 #' @inheritParams graphics::matplot
 #' 
 #' @seealso \code{\link{murphydiag_diff}},
@@ -48,7 +49,7 @@ hac_sd <- function(x, k = 0){
 #'   \code{\link{[.murphydiag}}
 #' 
 #' @importFrom graphics abline matplot lines polygon
-#' @importFrom stats qnorm sd
+#' @importFrom stats qnorm sd lm
 #' @importFrom magrittr "%>%"
 #' @export
 plot.murphydiag_diff <- function(x, type = "l",
