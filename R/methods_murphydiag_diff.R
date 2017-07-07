@@ -40,7 +40,7 @@ hac_sd <- function(x, k = 0){
 #' 
 #' @param x an object inheriting from the class \code{murphydiag}.
 #' @param main an overall title for the plot: see \code{\link{title}}.
-#' @param level_ci level for confidence interval
+#' @param level_ci level for confidence interval (set to \code{NULL} to omit it)
 #' @param sd_lags number of autocovariances to use for confidence intervals (defaults to zero; values 1, 2, 3, ... may make sense for time series data. Set to \code{NULL} for data-driven selection.)
 #' @inheritParams graphics::matplot
 #' 
@@ -61,6 +61,10 @@ plot.murphydiag_diff <- function(x, type = "l",
                                  level_ci = 0.95, 
                                  sd_lags = 0,
                                  ...) {
+  
+  stopifnot(is.null(level_ci) | (level_ci > 0 & level_ci < 1), 
+            is.null(sd_lags) | (sd_lags %in% 0:length(x)))
+  
   m <- x
   class(m) <- "murphydiag"
   if (is.null(main)) main <- sprintf("%s vs %s", names(m$x)[1L], names(m$x)[2L])
