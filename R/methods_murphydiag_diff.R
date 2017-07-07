@@ -1,3 +1,39 @@
+# Function to compute variance estimator which accounts for autocorrelation
+hac_sd <- function(x, k = 0){
+  
+  u <- x - mean(x)
+  n <- length(u)
+  
+  # choose nr of lags (if not provided)
+  if (is.null(k)){
+    
+    aux <- lm(u[-1]~u[-n]-1)
+    rho <- unname(aux$coefficients)
+    sigma <- sum(unname(aux$residuals)^2) / n
+    
+    top <- sum( (4*(rho^2) * (sigma^2)) / (((1-rho)^6)*((1+rho)^2)) )
+    bot <- sum( (sigma^2) / ((1-rho)^4) )
+    k <- min(c(ceiling(1.1447*((top/bot)*n)^(1/3)), round(0.5*n)))
+    
+  }
+  
+  # compute HAC
+  vcv <- sum(u^2) / n
+  
+  # If k > 0: Add autocovariance terms
+  if (k > 0){
+    w <- 1 - (1:k)/(k+1)
+    for (i in 1:k){
+      cov <- sum(u[(i+1):n] * u[1:(n-i)]) / n
+      vcv <- vcv + 2*w[i]*cov
+    }
+  }
+  
+  sqrt(vcv/n)
+  
+}
+
+
 #' Plotting Murphy diagram difference objects
 #' 
 #' Plaster them walls
@@ -22,6 +58,7 @@ plot.murphydiag_diff <- function(x, type = "l",
                                  xlab = NULL,
                                  ylab = NULL, 
                                  level_ci = 0.95, 
+                                 sd_lags = 0,
                                  ...) {
   m <- x
   class(m) <- "murphydiag"
@@ -49,30 +86,41 @@ plot.murphydiag_diff <- function(x, type = "l",
   
   yl <- yl_main %>% sapply(colMeans) %>% t %>% (function(z) z[, 1L] - z[, 2L])
   yl_sd <- yl_main %>% lapply(function(z) z[, 1L] - z[, 2L]) %>% 
-    sapply(function(z) sd(z)/sqrt(length(z))) 
+    sapply(hac_sd, k = sd_lags)
   yr <- yr_main %>% sapply(colMeans) %>% t %>% (function(z) z[, 1L] - z[, 2L])
   yr_sd <- yr_main %>% lapply(function(z) z[, 1L] - z[, 2L]) %>% 
-    sapply(function(z) sd(z)/sqrt(length(z))) 
+    sapply(hac_sd, k = sd_lags)
   
   n <- length(tt) + 1L
   interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
   xx <- c(tl, tr)[interleaved]
   yy <- c(yl, yr)[interleaved]
-  a_lb <- 0.5*(1-level_ci)
-  yy_lb <- c(yl + qnorm(a_lb)*yl_sd, yr + qnorm(a_lb)*yr_sd)[interleaved]
-  a_ub <- 0.5 + 0.5*level_ci
-  yy_ub <- c(yl + qnorm(a_ub)*yl_sd, yr + qnorm(a_ub)*yr_sd)[interleaved]
   
-  if (is.null(ylim)){
-    ylim <- range(yy_lb, yy_ub)
+  if (is.null(level_ci)){
+    
+    matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
+            main = main, xlab = xlab, ylab = ylab, ...)
+    abline(h = 0, lty = 2)
+    
+    } else {
+      
+    a_lb <- 0.5*(1-level_ci)
+    yy_lb <- c(yl + qnorm(a_lb)*yl_sd, yr + qnorm(a_lb)*yr_sd)[interleaved]
+    a_ub <- 0.5 + 0.5*level_ci
+    yy_ub <- c(yl + qnorm(a_ub)*yl_sd, yr + qnorm(a_ub)*yr_sd)[interleaved]
+        
+    if (is.null(ylim)){
+      ylim <- range(yy_lb, yy_ub)
+    }  
+        
+    matplot(xx, yy, type = "n", xlim = xlim, ylim = ylim,
+            main = main, xlab = xlab, ylab = ylab, ...)
+    polygon(c(xx, rev(xx)), c(yy_ub, rev(yy_lb)), col = "grey", 
+            border = NA)
+    lines(xx, yy, type = type)
+    abline(h = 0, lty = 2)
+      
   }
-  
-  matplot(xx, yy, type = "n", xlim = xlim, ylim = ylim,
-          main = main, xlab = xlab, ylab = ylab, ...)
-  polygon(c(xx, rev(xx)), c(yy_ub, rev(yy_lb)), col = "grey", 
-          border = NA)
-  lines(xx, yy, type = type)
-  abline(h = 0, lty = 2)
   
   invisible(m)
 }
