@@ -99,17 +99,15 @@ plot.murphydiag <- function(x, type = "l",
     }
   }
   tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
-  tt <- sort(unique(tt))
+  tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
 
   msfun <- ms_fun(m)
-  tl <- c(xlim[1L], tt)
-  tr <- c(tt, xlim[2L])
   yl <- msfun(tl, right = FALSE)
   yr <- msfun(tr, right = TRUE)
 
-  n <- length(tt) + 1L
+  n <- length(tt)
   interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
-  xx <- c(tl, tr)[interleaved]
+  xx <- rep(tt, each = 2L)
   yy <- if (length(m$x) > 1L) {
     rbind(yl, yr)[interleaved, ]
   } else {
