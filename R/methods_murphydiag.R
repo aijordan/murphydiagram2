@@ -102,8 +102,8 @@ plot.murphydiag <- function(x, type = "l",
   tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
 
   msfun <- ms_fun(m)
-  yl <- msfun(tl, right = FALSE)
-  yr <- msfun(tr, right = TRUE)
+  yl <- msfun(tt, right = FALSE)
+  yr <- msfun(tt, right = TRUE)
 
   n <- length(tt)
   interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
