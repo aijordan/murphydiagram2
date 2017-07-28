@@ -109,9 +109,9 @@ plot.murphydiag <- function(x, type = "l",
   interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
   xx <- rep(tt, each = 2L)
   yy <- if (length(m$x) > 1L) {
-    rbind(yl, yr)[interleaved, ]
+    rbind(yr, yl)[interleaved, ]
   } else {
-    c(yl, yr)[interleaved]
+    c(yr, yl)[interleaved]
   }
 
   matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
