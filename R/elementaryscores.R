@@ -19,10 +19,44 @@ NULL
 
 
 #' @rdname elementaryscores
+#' @export
+es_expect <- function(a, t, x, y, right = FALSE) {
+  a <- as.vector(a, "numeric")
+  a[a <= 0 | a >= 1] <- NaN
+  t <- as.vector(t, "numeric")
+  x <- as.matrix(x)
+  y <- as.vector(y, "numeric")
+  right <- as.vector(right, "logical")
+  
+  na <- length(a)
+  nt <- length(t)
+  nx <- dim(x)[2L]
+  ny <- length(y)
+  stopifnot(identical(length(right), 1L))
+  if (!identical(dim(x)[1L], ny))
+    stop("forecast matrix is incompatible with observation vector")
+  
+  outdim <- c(ny, nx, nt, na)
+  if (!identical(na, 1L)) a <- rep(a, each = ny * nx * nt)
+  if (!identical(nt, 1L)) t <- rep(t, each = ny * nx)
+  dim(x) <- NULL
+  
+  tx <- if (right) t <= x else t < x
+  ty <- if (right) t <= y else t < y
+  I <- ((y < x) - a) * abs(t - y)
+  
+  array(2 * I * (tx - ty), outdim)
+}
+
+#' @rdname elementaryscores
 #' @export es_mean
 es_mean <- function(t, x, y, right = FALSE)
   2 * es_expect(t, x, y, 0.5, right)
 
+#' @rdname elementaryscores
+#' @export es_median
+es_median <- function(t, x, y, right = FALSE)
+  2 * es_quant(t, x, y, 0.5, right)
 
 #' @rdname elementaryscores
 #' @export es_prob
@@ -34,13 +68,6 @@ es_prob <- function(t, x, y, right = FALSE) {
   
   2 * es_expect(t, x, y, 0.5, right)
 }
-
-
-#' @rdname elementaryscores
-#' @export es_median
-es_median <- function(t, x, y, right = FALSE)
-  2 * es_quant(t, x, y, 0.5, right)
-
 
 #' @rdname elementaryscores
 #' @export es_quant
@@ -59,26 +86,5 @@ es_quant <- function(t, x, y, level, right = FALSE) {
   tx <- if (right) t <= x else t < x
   ty <- if (right) t <= y else t < y
   I <- (y < x) - level
-  drop(I * (tx - ty))
-}
-
-
-#' @rdname elementaryscores
-#' @export es_expect
-es_expect <- function(t, x, y, level, right = FALSE) {
-  stopifnot(identical(length(t), 1L))
-  stopifnot(identical(length(level), 1L))
-  stopifnot(identical(length(right), 1L))
-  
-  x <- as.matrix(x)
-  y <- as.vector(y)
-  level[!(level > 0 && level < 1)] <- NaN
-  
-  if (!identical(dim(x)[1L], length(y)))
-    stop("forecast matrix is incompatible with observation vector")
-  
-  tx <- if (right) t <= x else t < x
-  ty <- if (right) t <= y else t < y
-  I <- ((y < x) - level) * abs(t - y)
   drop(I * (tx - ty))
 }
