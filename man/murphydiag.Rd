@@ -4,6 +4,8 @@
 \alias{murphydiag}
 \alias{murphydiag.default}
 \alias{murphydiag.lm}
+\alias{murphydiag.rq}
+\alias{murphydiag.randomForest}
 \title{Murphy diagram object}
 \usage{
 murphydiag(object, ...)
@@ -13,6 +15,12 @@ murphydiag(object, ...)
 
 \method{murphydiag}{lm}(object, newdata = NULL, newy = NULL,
   type = "mean", xnames = NULL, ...)
+
+\method{murphydiag}{rq}(object, newdata = NULL, newy = NULL,
+  xnames = NULL, ...)
+
+\method{murphydiag}{randomForest}(object, newdata = NULL, newy = NULL,
+  xnames = NULL, ...)
 }
 \arguments{
 \item{object}{an object used to select a method.}
@@ -52,15 +60,18 @@ The output is an object of class \code{murphydiag},
 \code{murphydiag} constructs and returns an object of
 class \code{murphydiag}. It is a generic function with
 a \code{default} method, and additional methods for classes
-\code{lm}, \code{XXX}, \code{YYY}.
+\code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
 }
-\section{Methods (by class)}{
+\details{
+In the default version, the user specifies all relevant information (forecasts, realizations, 
+information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
+from a few other packages:
 \itemize{
-\item \code{default}: 
-
-\item \code{lm}: 
-}}
-
+\item \dQuote{lm}, see \code{\link[stats]{lm}}
+\item \dQuote{rq}, see \code{\link[quantreg]{rq}}
+\item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
+}
+}
 \seealso{
 \code{\link{murphydiag_diff}},
   \code{\link{c.murphydiag}},
