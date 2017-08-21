@@ -29,7 +29,7 @@
 
 \item{ylab}{titles for x and y axes, as in \code{\link{plot}}.}
 
-\item{level_ci}{level for confidence interval}
+\item{level_ci}{level for confidence interval (set to \code{NULL} to omit it)}
 
 \item{sd_lags}{number of autocovariances to use for confidence intervals (defaults to zero; values 1, 2, 3, ... may make sense for time series data. Set to \code{NULL} for data-driven selection.)}
 

@@ -5,7 +5,6 @@
 #' a \code{default} method, and additional methods for classes
 #' \code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
 #' 
-#' @rdname murphydiag
 #' @param object an object used to select a method.
 #' @param ... further arguments passed to or from other methods.
 #' @return The output is an object of class \code{murphydiag},
@@ -17,7 +16,6 @@
 #'       containing \code{type} and \code{level} (optional).
 #'   }
 #'
-#' @export
 #' @details In the default version, the user specifies all relevant information (forecasts, realizations, 
 #' information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
 #' from a few other packages:
@@ -26,6 +24,13 @@
 #' \item \dQuote{rq}, see \code{\link[quantreg]{rq}}
 #' \item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
 #' }
+#' 
+#' @seealso \code{\link{murphydiag_diff}},
+#'   \code{\link{c.murphydiag}},
+#'   \code{\link{[.murphydiag}},
+#'   \code{\link{plot.murphydiag}}
+#' 
+#' @export
 murphydiag <- function(object, ...) UseMethod("murphydiag")
 
 #' @rdname murphydiag
@@ -39,14 +44,8 @@ murphydiag <- function(object, ...) UseMethod("murphydiag")
 #' @param xnames optional; a character vector with the
 #'   forecasting methods' names.
 #' 
-#' @seealso \code{\link{murphydiag_diff}},
-#'   \code{\link{c.murphydiag}},
-#'   \code{\link{[.murphydiag}},
-#'   \code{\link{plot.murphydiag}}
-#' 
 #' @export
-murphydiag.default <- function(object, y, type, level = NULL,
-                               xnames = NULL, ...) {
+murphydiag.default <- function(object, y, type, level = NULL, xnames = NULL, ...) {
   x <- object
   rval <- list(
     x = as.data.frame(x),
