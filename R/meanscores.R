@@ -1,6 +1,6 @@
-#' Score functions
+#' Mean score functions
 #' 
-#' Functions for the computation of elementary scores.
+#' Functions for the computation of mean elementary scores.
 #' 
 #' @param t an object convertible by \code{as.vector}
 #'   containing threshold values.
@@ -13,22 +13,19 @@
 #'   right-continuous in \code{x}, hence
 #'   left-continuous in \code{t}.
 #'   
-#' @return \code{\link{ms_mean}} and all other functions starting with \code{ms_} 
-#'   return a matrix whose rows correspond to values for \code{t}, and whose cols correspond to forecast methods. The cells of the matrix are average elementary scores over forecast cases. 
-#'   \code{\link{fs_mean}} and all other functions starting with \code{fs_} return a list whose entries correspond to values for \code{t}. Each entry contains a matrix whose rows correspond to forecast cases, and whose columns correspond to forecast methods. The cells of the matrix are scores obtained for a particular forecast case.
+#' @return hubba
 #' 
-#' @name scores
-#' @aliases ms_mean, ms_prob, ms_median, ms_quant, ms_expect, fs_mean, fs_prob, fs_median, fs_quant, fs_expect
+#' @name meanscores
 NULL
 
 
-#' @rdname scores
+#' @rdname meanscores
 #' @export ms_mean
 ms_mean <- function(t, x, y, right = FALSE)
   2 * ms_expect(t, x, y, 0.5, right)
 
 
-#' @rdname scores
+#' @rdname meanscores
 #' @export ms_prob
 ms_prob <- function(t, x, y, right = FALSE) {
   x <- as.matrix(x)
@@ -40,13 +37,13 @@ ms_prob <- function(t, x, y, right = FALSE) {
 }
   
 
-#' @rdname scores
+#' @rdname meanscores
 #' @export ms_median
 ms_median <- function(t, x, y, right = FALSE)
   2 * ms_quant(t, x, y, 0.5, right)
 
 
-#' @rdname scores
+#' @rdname meanscores
 #' @export ms_quant
 ms_quant <- function(t, x, y, level, right = FALSE) {
   stopifnot(identical(length(level), 1L))
@@ -70,7 +67,7 @@ ms_quant <- function(t, x, y, level, right = FALSE) {
 }
 
 
-#' @rdname scores
+#' @rdname meanscores
 #' @export ms_expect
 ms_expect <- function(t, x, y, level, right = FALSE) {
   stopifnot(identical(length(level), 1L))
