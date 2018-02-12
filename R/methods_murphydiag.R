@@ -120,3 +120,37 @@ plot.murphydiag <- function(x, type = "l",
 
   invisible(m)
 }
+
+#'
+#'
+as.data.frame.murphydiag <- function(x, row.names = NULL, optional = FALSE, ..., threshold = NULL) {
+  m <- x
+  tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
+    if (identical(m$functional$type, "prob")) {
+      xlim <- c(0, 1)
+    } else {
+      range_tt <- range(tt)
+      xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
+    }
+  tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+  tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  
+  msfun <- ms_fun(m)
+  yl <- msfun(tt, right = FALSE)
+  yr <- msfun(tt, right = TRUE)
+  
+  n <- length(tt)
+  interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
+  xx <- rep(tt, each = 2L)
+  yy <- if (length(m$x) > 1L) {
+    rbind(yr, yl)[interleaved, ]
+  } else {
+    c(yr, yl)[interleaved]
+  }
+  
+  data.frame(threshold = xx,
+             method = rep(names(m$x), rep.int(length(xx), length(m$x))),
+             scores = c(yy),
+             row.names = row.names,
+             optional = optional, ...)
+}
