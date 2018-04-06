@@ -2,25 +2,26 @@
 % Please edit documentation in R/elementaryscores.R
 \name{elementaryscores}
 \alias{elementaryscores}
-\alias{es_mean}
-\alias{es_prob}
-\alias{es_median}
-\alias{es_quant}
 \alias{es_expect}
+\alias{es_mean}
+\alias{es_median}
+\alias{es_prob}
+\alias{es_quant}
 \title{Elementary score functions}
 \usage{
-es_mean(t, x, y, right = FALSE)
+es_expect(t, x, y, level, right = FALSE)
 
-es_prob(t, x, y, right = FALSE)
+es_mean(t, x, y, right = FALSE)
 
 es_median(t, x, y, right = FALSE)
 
-es_quant(t, x, y, level, right = FALSE)
+es_prob(t, x, y, right = FALSE)
 
-es_expect(t, x, y, level, right = FALSE)
+es_quant(t, x, y, level, right = FALSE)
 }
 \arguments{
-\item{t}{a single threshold value.}
+\item{t}{an object convertible by \code{as.vector}
+containing treshold values.}
 
 \item{x}{an object convertible by \code{as.matrix}
 containing forecasts (dim: #observations,
@@ -29,13 +30,14 @@ containing forecasts (dim: #observations,
 \item{y}{an object convertible by \code{as.vector}
 containing observations.}
 
-\item{right}{logical, indicating if the scores are
-right-continuous in \code{x}.}
+\item{level}{numerical, a single value between 0 and 1.}
 
-\item{level}{a single value in (0, 1).}
+\item{right}{logical, indicating if the scores are
+right-continuous in \code{t}.}
 }
 \value{
-yadda
+Returns an array with dimension
+ (#thresholds, #observations, #forecast methods).
 }
 \description{
 Functions for the computation of the elementary scores.

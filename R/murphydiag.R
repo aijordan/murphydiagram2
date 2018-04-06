@@ -3,7 +3,7 @@
 #' \code{murphydiag} constructs and returns an object of
 #' class \code{murphydiag}. It is a generic function with
 #' a \code{default} method, and additional methods for classes
-#' \code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
+#' \code{\link[stats]{lm}}, \code{\link[randomForest]{randomForest}}, \code{\link[quantreg]{rq}} (from package \code{quantreg}).
 #' 
 #' @param object an object used to select a method.
 #' @param ... further arguments passed to or from other methods.
@@ -12,7 +12,7 @@
 #'   \tabular{ll}{
 #'     \code{x} \tab a data frame of forecasts\cr
 #'     \code{y} \tab a vector of observations\cr
-#'     \code{functional} \tab a list that specifies the functional,
+#'     \code{functional} \tab a list that specifies the forecast functional,
 #'       containing \code{type} and \code{level} (optional).
 #'   }
 #'

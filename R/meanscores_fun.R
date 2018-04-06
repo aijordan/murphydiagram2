@@ -3,13 +3,15 @@
 #' Creating functions for the computation of mean elementary scores.
 #' 
 #' @param m an object inheriting from class "murphydiag".
-#' @param x an object convertible by \code{as.matrix}
-#'   containing forecasts (dim: #observations, #forecast methods).
-#' @param y an object convertible by \code{as.vector}
-#'   containing observations.
-#' @param level a single value in (0, 1).
+#' @inheritParams elementaryscores
 #'   
-#' @return hubba
+#' @return A function in two arguments: 
+#'   \tabular{ll}{
+#'   \code{t} \tab an object convertible by \code{as.vector}
+#'  containing treshold values.\cr
+#'   \code{right} \tab logical, indicating if the scores are
+#'   right-continuous in \code{t}.
+#'   }
 #' 
 #' @name meanscores_fun
 NULL

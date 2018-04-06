@@ -4,12 +4,14 @@
 \alias{plot.murphydiag_diff}
 \title{Plotting Murphy diagram difference objects}
 \usage{
-\method{plot}{murphydiag_diff}(x, type = "l", xlim = NULL, ylim = NULL,
-  main = NULL, xlab = NULL, ylab = NULL, level_ci = 0.95, sd_lags = 0,
-  ...)
+\method{plot}{murphydiag_diff}(x, thresholds = 500L, type = "l",
+  xlim = NULL, ylim = NULL, main = NULL, xlab = NULL, ylab = NULL,
+  level_ci = 0.95, sd_lags = 0, ...)
 }
 \arguments{
-\item{x}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{an object inheriting from the class \code{murphydiag_diff}.}
+
+\item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
 
 \item{type}{character string (length 1 vector) or vector of 1-character
     strings indicating the type of plot for each
@@ -31,7 +33,9 @@
 
 \item{level_ci}{level for confidence interval (set to \code{NULL} to omit it)}
 
-\item{sd_lags}{number of autocovariances to use for confidence intervals (defaults to zero; values 1, 2, 3, ... may make sense for time series data. Set to \code{NULL} for data-driven selection.)}
+\item{sd_lags}{number of autocovariances to use for confidence intervals
+(defaults to zero; values 1, 2, 3, ... may make sense for time series data.
+ Set to \code{NULL} for data-driven selection.)}
 
 \item{...}{Graphical parameters (see \code{\link{par}}) and any further
     arguments of \code{plot}, typically \code{\link{plot.default}}, may also be
@@ -40,7 +44,7 @@
     arguments to \code{\link{title}} may be supplied to this function.}
 }
 \description{
-Plaster them walls
+Plotting Murphy diagram difference objects
 }
 \seealso{
 \code{\link{murphydiag_diff}},

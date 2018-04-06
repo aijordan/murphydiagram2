@@ -4,11 +4,13 @@
 \alias{plot.murphydiag}
 \title{Plotting Murphy diagram objects}
 \usage{
-\method{plot}{murphydiag}(x, type = "l", xlim = NULL, ylim = NULL,
-  xlab = NULL, ylab = NULL, ...)
+\method{plot}{murphydiag}(x, thresholds = 500L, type = "l", xlim = NULL,
+  ylim = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{x}{an object inheriting from the class \code{murphydiag}.}
+
+\item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
 
 \item{type}{character string (length 1 vector) or vector of 1-character
     strings indicating the type of plot for each
@@ -33,7 +35,7 @@
     arguments to \code{\link{title}} may be supplied to this function.}
 }
 \description{
-Plaster them walls
+Plotting Murphy diagram objects
 }
 \seealso{
 \code{\link{murphydiag}},

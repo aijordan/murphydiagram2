@@ -15,7 +15,7 @@
 (see \link{[.data.frame}).
 }
 \description{
-And split 'em back up
+Subsetting Murphy diagram objects
 }
 \seealso{
 \code{\link{c.murphydiag}}

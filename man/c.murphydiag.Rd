@@ -13,7 +13,7 @@
 An object inheriting from the \code{murphydiag} class.
 }
 \description{
-Put 'em together
+Combine two or more 'murphydiag' objects that are based on the same observations and type of forecasts.
 }
 \seealso{
 \code{\link{[.murphydiag}}, \code{\link{murphydiag}}

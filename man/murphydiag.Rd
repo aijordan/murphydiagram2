@@ -52,7 +52,7 @@ The output is an object of class \code{murphydiag},
   \tabular{ll}{
     \code{x} \tab a data frame of forecasts\cr
     \code{y} \tab a vector of observations\cr
-    \code{functional} \tab a list that specifies the functional,
+    \code{functional} \tab a list that specifies the forecast functional,
       containing \code{type} and \code{level} (optional).
   }
 }
@@ -60,7 +60,7 @@ The output is an object of class \code{murphydiag},
 \code{murphydiag} constructs and returns an object of
 class \code{murphydiag}. It is a generic function with
 a \code{default} method, and additional methods for classes
-\code{lm}, \code{randomForest}, \code{rq} (from package \code{quantreg}).
+\code{\link[stats]{lm}}, \code{\link[randomForest]{randomForest}}, \code{\link[quantreg]{rq}} (from package \code{quantreg}).
 }
 \details{
 In the default version, the user specifies all relevant information (forecasts, realizations, 

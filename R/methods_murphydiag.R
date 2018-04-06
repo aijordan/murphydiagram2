@@ -1,6 +1,6 @@
 #' Combining Murphy diagram objects
 #' 
-#' Put 'em together
+#' Combine two or more 'murphydiag' objects that are based on the same observations and type of forecasts.
 #' 
 #' @param ... objects to be concatenated.
 #' 
@@ -15,28 +15,32 @@ c.murphydiag <- function(...) {
 
   proto <- input[[1L]]
   inputm <- input[sapply(input, inherits, "murphydiag")]
-  identical_y <- sapply(inputm,
-                        function(m1, m2)
-                          isTRUE(all.equal(m1$y, m2$y)),
-                        proto)
-  identical_func <- sapply(inputm,
-                           function(m1, m2)
-                             identical(m1$functional, m2$functional),
-                           proto)
-
+  identical_y <-
+    sapply(inputm,
+           function(m1, m2) {
+             isTRUE(all.equal(m1$y, m2$y))
+           },
+           proto)
+  identical_func <-
+    sapply(inputm,
+           function(m1, m2) {
+             identical(m1$functional, m2$functional)
+           },
+           proto)
   if (!all(identical_y))
     stop("incompatible observations")
   if (!all(identical_func))
     stop("incompatible functionals")
 
-  inputx <- lapply(input,
-                   function(m) {
-                     if (inherits(m, "murphydiag"))
-                       m$x
-                     else
-                       m
-                   })
-
+  inputx <-
+    lapply(input,
+           function(m) {
+             if (inherits(m, "murphydiag"))
+               m$x
+             else
+               m
+           })
+  
   rval <- list(
     x = as.data.frame(inputx),
     y = proto$y,
@@ -50,8 +54,6 @@ c.murphydiag <- function(...) {
 }
 
 #' Subsetting Murphy diagram objects
-#' 
-#' And split 'em back up
 #' 
 #' @param m an object inheriting from the class \code{murphydiag}.
 #' @param j index specifying elements to extract.
@@ -69,9 +71,8 @@ c.murphydiag <- function(...) {
 
 #' Plotting Murphy diagram objects
 #' 
-#' Plaster them walls
-#' 
 #' @param x an object inheriting from the class \code{murphydiag}.
+#' @param thresholds either the maximum number of thresholds (if length 1) or the values against which to plot 
 #' @inheritParams graphics::matplot
 #' 
 #' @seealso \code{\link{murphydiag}},
@@ -80,38 +81,51 @@ c.murphydiag <- function(...) {
 #' 
 #' @importFrom graphics abline matplot
 #' @export
-plot.murphydiag <- function(x, type = "l",
-                            xlim = NULL,
-                            ylim = NULL,
-                            xlab = NULL,
-                            ylab = NULL, ...) {
+plot.murphydiag <- function(x, thresholds = 500L,
+                            type = "l",
+                            xlim = NULL, ylim = NULL,
+                            xlab = NULL, ylab = NULL, ...) {
   m <- x
-  if (is.null(xlab)) xlab <- expression(paste("Parameter ", theta))
+  if (is.null(xlab)) xlab <- "threshold"
   if (is.null(ylab)) ylab <- "mean score"
 
-  tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
   if (is.null(xlim)) {
     if (identical(m$functional$type, "prob")) {
       xlim <- c(0, 1)
     } else {
-      range_tt <- range(tt)
+      range_tt <- range(m$x, m$y)
       xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
     }
   }
-  tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
-  tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
-
+  
+  interp <- identical(length(thresholds), 1L) && thresholds < length(m$y)
+  
   msfun <- ms_fun(m)
-  yl <- msfun(tt, right = FALSE)
-  yr <- msfun(tt, right = TRUE)
-
-  n <- length(tt)
-  interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
-  xx <- rep(tt, each = 2L)
-  yy <- if (length(m$x) > 1L) {
-    rbind(yr, yl)[interleaved, ]
+  if (interp) {
+    stopifnot(thresholds > 2L)
+    xx <- seq(xlim[1L], xlim[2L], length.out = thresholds)
+    mid <- floor(0.5 * thresholds)
+    y1 <- msfun(xx[1:mid], right = FALSE)
+    y2 <- msfun(xx[(mid + 1):thresholds], right = TRUE)
+    yy <- if (length(m$x) > 1L) rbind(y1, y2) else c(y1, y2)
   } else {
-    c(yr, yl)[interleaved]
+    tt <- if (length(thresholds) > 1L) {
+      thresholds
+    } else {
+      c(m$x, m$y, recursive = TRUE, use.names = FALSE)
+    }
+    tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+    tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+    yl <- msfun(tt, right = FALSE)
+    yr <- msfun(tt, right = TRUE)
+    n <- length(tt)
+    interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
+    xx <- rep(tt, each = 2L)
+    yy <- if (length(m$x) > 1L) {
+      rbind(yl, yr)[interleaved, ]
+    } else {
+      c(yl, yr)[interleaved]
+    }
   }
 
   matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
@@ -121,36 +135,64 @@ plot.murphydiag <- function(x, type = "l",
   invisible(m)
 }
 
+#' Converting a murphydiag object into a data.frame
+#' 
+#' @inheritParams plot.murphydiag
+#' 
+#' @return A \code{data.frame} with three columns: \code{method}, \code{threshold}, \code{score}
 #'
-#'
-as.data.frame.murphydiag <- function(x, row.names = NULL, optional = FALSE, ..., threshold = NULL) {
+#' @export
+as.data.frame.murphydiag <- function(x, ..., thresholds = 500L) {
   m <- x
-  tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
-    if (identical(m$functional$type, "prob")) {
-      xlim <- c(0, 1)
-    } else {
-      range_tt <- range(tt)
-      xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
-    }
-  tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
-  tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
-  
-  msfun <- ms_fun(m)
-  yl <- msfun(tt, right = FALSE)
-  yr <- msfun(tt, right = TRUE)
-  
-  n <- length(tt)
-  interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
-  xx <- rep(tt, each = 2L)
-  yy <- if (length(m$x) > 1L) {
-    rbind(yr, yl)[interleaved, ]
+  if (identical(m$functional$type, "prob")) {
+    range_tt <- c(0, 1)
+    xlim <- range_tt
   } else {
-    c(yr, yl)[interleaved]
+    range_tt <- range(m$x, m$y)
+    xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
   }
   
-  data.frame(threshold = xx,
-             method = rep(names(m$x), rep.int(length(xx), length(m$x))),
-             scores = c(yy),
-             row.names = row.names,
-             optional = optional, ...)
+  interp <- identical(length(thresholds), 1L) && thresholds < length(m$y)
+  
+  msfun <- ms_fun(m)
+  if (interp) {
+    stopifnot(thresholds > 2L)
+    xx <- seq(xlim[1L], xlim[2L], length.out = thresholds)
+    mid <- floor(0.5 * thresholds)
+    y1 <- msfun(xx[1:mid], right = FALSE)
+    y2 <- msfun(xx[(mid + 1):thresholds], right = TRUE)
+    yy <- if (length(m$x) > 1L) rbind(y1, y2) else c(y1, y2)
+    
+    data.frame(
+      method = rep(names(m$x), rep.int(length(xx), length(m$x))),
+      threshold = xx,
+      score = c(yy))
+    
+  } else {
+    if (length(thresholds) > 1L) {
+      tt <- sort(unique(thresholds))
+      yl <- msfun(tt, right = FALSE)
+      yr <- msfun(tt, right = TRUE)
+      n <- length(tt)
+      interleaved <- rep(1:n, each = 2L) + rep(c(0L, n), n)
+      xx <- rep(tt, each = 2L)
+      yy <- if (length(m$x) > 1L) {
+        rbind(yl, yr)[interleaved, ]
+      } else {
+        c(yl, yr)[interleaved]
+      }
+      
+      data.frame(
+        method = rep(names(m$x), rep.int(length(xx), length(m$x))),
+        threshold = xx,
+        score = c(yy))
+      
+    } else {
+      do.call(rbind,
+              lapply(seq_along(m$x), function(i) {
+                as.data.frame(m[i], thresholds = c(m$x[[i]], m$y, range_tt))
+              })
+      )
+    }
+  }
 }

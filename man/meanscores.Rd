@@ -2,41 +2,41 @@
 % Please edit documentation in R/meanscores.R
 \name{meanscores}
 \alias{meanscores}
-\alias{ms_mean}
-\alias{ms_prob}
-\alias{ms_median}
-\alias{ms_quant}
 \alias{ms_expect}
+\alias{ms_mean}
+\alias{ms_median}
+\alias{ms_prob}
+\alias{ms_quant}
 \title{Mean score functions}
 \usage{
-ms_mean(t, x, y, right = FALSE)
+ms_expect(t, x, y, level, right = FALSE)
 
-ms_prob(t, x, y, right = FALSE)
+ms_mean(t, x, y, right = FALSE)
 
 ms_median(t, x, y, right = FALSE)
 
-ms_quant(t, x, y, level, right = FALSE)
+ms_prob(t, x, y, right = FALSE)
 
-ms_expect(t, x, y, level, right = FALSE)
+ms_quant(t, x, y, level, right = FALSE)
 }
 \arguments{
 \item{t}{an object convertible by \code{as.vector}
-containing threshold values.}
+containing treshold values.}
 
 \item{x}{an object convertible by \code{as.matrix}
-containing forecasts (dim: #observations, #forecast methods).}
+containing forecasts (dim: #observations,
+#forecast methods).}
 
 \item{y}{an object convertible by \code{as.vector}
 containing observations.}
 
-\item{right}{logical, indicating if the scores are
-right-continuous in \code{x}, hence
-left-continuous in \code{t}.}
+\item{level}{numerical, a single value between 0 and 1.}
 
-\item{level}{a single value in (0, 1).}
+\item{right}{logical, indicating if the scores are
+right-continuous in \code{t}.}
 }
 \value{
-hubba
+A matrix of average scores of dimension (length of \code{t}, number of forecast methods).
 }
 \description{
 Functions for the computation of mean elementary scores.
