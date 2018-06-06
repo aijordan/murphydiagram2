@@ -12,4 +12,5 @@ Description: Score calculation and printing methods for
 License: GPL-3
 RoxygenNote: 6.0.1
 Imports: magrittr
+Suggests: hasseDiagram
 Enhances: randomForest, quantreg

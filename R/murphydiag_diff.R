@@ -19,11 +19,7 @@
 #' @export
 murphydiag_diff <- function(m1, m2 = NULL) {
   stopifnot(inherits(m1, "murphydiag"))
-  m <- c(m1, m2)
-  if (!identical(length(m$x), 2L))
-    stop("difference objects require exactly 2 murphy diagrams")
-  class(m) <- "murphydiag_diff"
-  m
+  m1 - m2
 }
 
 #' @describeIn murphydiag_diff
@@ -35,6 +31,14 @@ murphydiag_diff <- function(m1, m2 = NULL) {
   m <- c(m1, m2)
   if (!identical(length(m$x), 2L))
     stop("difference objects require exactly 2 murphy diagrams")
+  m$md_diff_fun <- switch(
+    m$functional$type,
+    median =,
+    quantile = pwConstantFun_diff(m),
+    mean =,
+    prob =,
+    expectile = pwLinearFun_diff(m)
+  )
   class(m) <- "murphydiag_diff"
   m
 }

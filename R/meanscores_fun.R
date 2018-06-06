@@ -21,13 +21,22 @@ NULL
 #' @export ms_fun
 ms_fun <- function(m) {
   stopifnot(inherits(m, "murphydiag"))
-  switch(m$functional$type,
-         mean = ms_mean_fun(m$x, m$y),
-         prob = ms_prob_fun(m$x, m$y),
-         median = ms_median_fun(m$x, m$y),
-         quantile = ms_quant_fun(m$x, m$y, m$functional$level),
-         expectile = ms_expect_fun(m$x, m$y, m$functional$level))
+  function(t, right.cont = TRUE, simplify = TRUE) {
+    args <- list(t, right.cont)
+    sapply(
+      m$md_fun,
+      function(FUN) do.call(FUN, args),
+      simplify = simplify
+    )
+  }
 }
+#   switch(m$functional$type,
+#          mean = ms_mean_fun(m$x, m$y),
+#          prob = ms_prob_fun(m$x, m$y),
+#          median = ms_median_fun(m$x, m$y),
+#          quantile = ms_quant_fun(m$x, m$y, m$functional$level),
+#          expectile = ms_expect_fun(m$x, m$y, m$functional$level))
+# }
 
 
 #' @rdname meanscores_fun

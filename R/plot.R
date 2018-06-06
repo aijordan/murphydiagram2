@@ -1,36 +1,54 @@
-# Function to compute variance estimator which accounts for autocorrelation
-hac_sd <- function(x, k = 0){
-  
-  u <- x - mean(x)
-  n <- length(u)
-  
-  # choose nr of lags (if not provided)
-  if (is.null(k)){
-    
-    aux <- lm(u[-1]~u[-n]-1)
-    rho <- unname(aux$coefficients)
-    sigma <- sum(unname(aux$residuals)^2) / n
-    
-    top <- sum( (4*(rho^2) * (sigma^2)) / (((1-rho)^6)*((1+rho)^2)) )
-    bot <- sum( (sigma^2) / ((1-rho)^4) )
-    k <- min(c(ceiling(1.1447*((top/bot)*n)^(1/3)), round(0.5*n)))
-    
-  }
-  
-  # compute HAC
-  vcv <- sum(u^2) / n
-  
-  # If k > 0: Add autocovariance terms
-  if (k > 0){
-    w <- 1 - (1:k)/(k+1)
-    for (i in 1:k){
-      cov <- sum(u[(i+1):n] * u[1:(n-i)]) / n
-      vcv <- vcv + 2*w[i]*cov
+#' Plotting Murphy diagram objects
+#' 
+#' @param x an object inheriting from the class \code{murphydiag}.
+#' @param thresholds either the maximum number of thresholds (if length 1) or the values against which to plot 
+#' @param right.cont logical; whether the diagrams are right-continuous or not. Alternatively: the string "both"
+#' @inheritParams graphics::matplot
+#' 
+#' @seealso \code{\link{murphydiag}},
+#'   \code{\link{c.murphydiag}},
+#'   \code{\link{[.murphydiag}}
+#' 
+#' @importFrom graphics abline matplot
+#' @export
+plot.murphydiag <- function(x, thresholds = 1e4L, right.cont = "both",
+                            type = "l",
+                            xlim = NULL, ylim = NULL,
+                            xlab = NULL, ylab = NULL, ...) {
+  m <- x
+  if (is.null(xlab)) xlab <- "threshold"
+  if (is.null(ylab)) ylab <- "mean score"
+  if (is.null(xlim)) {
+    if (identical(m$functional$type, "prob")) {
+      xlim <- c(0, 1)
+    } else {
+      range_tt <- range(m$x, m$y)
+      xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
     }
   }
   
-  sqrt(vcv/n)
+  if (length(thresholds) == 1 && thresholds < length(m$y)) {
+    stopifnot(thresholds > 2L)
+    tt <- seq(xlim[1L], xlim[2L], length.out = thresholds)
+  } else if (length(thresholds) > 1L) {
+    tt <- thresholds
+    tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+    tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  } else {
+    tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
+    tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+    tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  }
   
+  msfun <- ms_fun(m)
+  xx <- tt
+  yy <- msfun(xx, right.cont)
+  if (right.cont == "both") xx <- rep(tt, each = 2L)
+  matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
+          xlab = xlab, ylab = ylab, ...)
+  abline(h = 0, lty = 2)
+  
+  invisible(m)
 }
 
 
@@ -52,14 +70,14 @@ hac_sd <- function(x, k = 0){
 #' @importFrom graphics abline matplot lines polygon
 #' @importFrom stats qnorm sd lm
 #' @export
-plot.murphydiag_diff <- function(x, thresholds = 500L,
+plot.murphydiag_diff <- function(x, ...,
+                                 thresholds = 500L,
                                  type = "l",
                                  xlim = NULL, ylim = NULL,
                                  main = NULL,
                                  xlab = NULL, ylab = NULL, 
                                  level_ci = 0.95, 
-                                 sd_lags = 0,
-                                 ...) {
+                                 sd_lags = 0) {
   
   stopifnot(is.null(level_ci) | (level_ci > 0 & level_ci < 1), 
             is.null(sd_lags) | (sd_lags %in% 0:length(x)))
@@ -140,12 +158,36 @@ plot.murphydiag_diff <- function(x, thresholds = 500L,
     ylim <- range(yy_lb, yy_ub)
   
   matplot(xx, yy, type = "n",
-    xlim = xlim, ylim = ylim,
-    main = main,
-    xlab = xlab, ylab = ylab, ...)
+          xlim = xlim, ylim = ylim,
+          main = main,
+          xlab = xlab, ylab = ylab, ...)
   polygon(c(xx, rev(xx)), c(yy_ub, rev(yy_lb)), col = "grey", border = NA)
   lines(xx, yy, type = type)
   abline(h = 0, lty = 2)
   
   invisible(m)
+}
+
+
+#' Plot dominance objects
+#'
+#' @param x an object inheriting from the class \code{dominance}.
+#' @param select choose a subset of forecasting methods.
+#' @param origin choose a set of origins.
+#' @param ... additional parameters passed to \code{hasseDiagram::hasse}.
+#' 
+#' @export
+plot.dominance <- function(x, ..., select = NULL, origin = NULL) {
+  if (!is.null(select)) x <- x[select]
+  class(x) <- NULL
+  if (!is.null(origin)) {
+    ind <- lapply(origin, function(o) x[o, ] | x[, o])
+    ind <- if (length(ind) > 1L)  {
+      do.call(`|`, ind) 
+    } else {
+      ind[[1L]]
+    }
+    x <- x[ind, ind, drop = FALSE]
+  }
+  hasseDiagram::hasse(x, ...)
 }

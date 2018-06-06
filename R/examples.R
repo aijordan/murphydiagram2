@@ -1,3 +1,41 @@
+#' Examples
+#' 
+#' @param n Number of forecast observation pairs.
+#' @param m Number of forecast methods.
+#' 
+#' @return A list.
+#' 
+#' @export
+drawExample <- function(n = 500, m = 30) {
+  information <- matrix(stats::rnorm(n * 10), n, 10)
+  junk <- matrix(stats::rnorm(n * 10), n, 10)
+  junk[, 3:4] <- junk[, 3:4] * ifelse(junk[, 3:4] > 0, 1.5, 1)
+  junk[, 5:6] <- junk[, 5:6] * ifelse(junk[, 5:6] < 0, 1.5, 1)
+  junk[, 7:8] <- abs(junk[, 7:8])
+  junk[, 9:10] <- -abs(junk[, 9:10])
+  
+  information_sets <- replicate(
+    m,
+    list(inf = sort(sample(1:10, stats::rbinom(10, 10, .5))),
+         jnk = sort(sample(1:10, sample(0:9, 1, prob = (10:1)^3)))),
+    simplify = FALSE
+  )
+  
+  y <- rowSums(information)
+  x <- sapply(
+    information_sets,
+    function(ind) {
+      rowSums(information[, ind$inf, drop = FALSE]) +
+        rowSums(junk[, ind$jnk, drop = FALSE])
+    }
+  )
+  
+  list(x = x, y = y, sets = information_sets)
+}
+
+
+
+
 # # library(devtools)
 # # install_github("aijordan/murphydiagram2")
 # library(murphydiagram2)
