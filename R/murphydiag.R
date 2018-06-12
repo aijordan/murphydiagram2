@@ -58,6 +58,14 @@ murphydiag.default <- function(object, y, type, level = NULL, xnames = NULL, ...
             identical(dim(rval$x)[1L], length(y)),
             identical(length(rval$functional$type), 1L))
   
+  stopifnot(!anyNA(x),
+            !anyNA(y))
+  
+  if (rval$functional$type == "prob") {
+    stopifnot(all(x >= 0 & x <= 1),
+              all(y == 0 | y == 1))
+  }
+  
   if (rval$functional$type %in% c("quantile", "expectile")) {
     rval$functional$level <- as.numeric(level)
     
