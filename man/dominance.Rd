@@ -4,10 +4,12 @@
 \alias{dominance}
 \title{dominance}
 \usage{
-dominance(m)
+dominance(m, abs.tol = sqrt(.Machine$double.eps))
 }
 \arguments{
 \item{m}{An object inheriting from the "murphydiag" class.}
+
+\item{abs.tol}{absolute tolerance}
 }
 \value{
 A matrix representing the dominance relationships (partial order)

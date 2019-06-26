@@ -5,7 +5,8 @@
 \title{Plotting Murphy diagram objects}
 \usage{
 \method{plot}{murphydiag}(x, thresholds = 10000L, right.cont = "both",
-  type = "l", xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL, ...)
+  type = "l", xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
+  ...)
 }
 \arguments{
 \item{x}{an object inheriting from the class \code{murphydiag}.}
@@ -29,12 +30,6 @@
 \item{xlab}{titles for x and y axes, as in \code{\link{plot}}.}
 
 \item{ylab}{titles for x and y axes, as in \code{\link{plot}}.}
-
-\item{...}{Graphical parameters (see \code{\link{par}}) and any further
-    arguments of \code{plot}, typically \code{\link{plot.default}}, may also be
-    supplied as arguments to this function.  Hence, the high-level
-    graphics control arguments described under \code{\link{par}} and the
-    arguments to \code{\link{title}} may be supplied to this function.}
 }
 \description{
 Plotting Murphy diagram objects

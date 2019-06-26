@@ -1,3 +1,7 @@
+#' @useDynLib murphydiagram2
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Murphy diagram object
 #' 
 #' \code{murphydiag} constructs and returns an object of
@@ -35,7 +39,7 @@ murphydiag <- function(object, ...) UseMethod("murphydiag")
 
 #' @rdname murphydiag
 #' 
-#' @param y an object convertible by \code{\link{as.vector}}
+#' @param y an object convertible by \code{\link{as.numeric}}
 #'   containing observations.
 #' @param type a string specifying the type of forecast,
 #'   e.g. \code{"mean"}.
@@ -46,53 +50,36 @@ murphydiag <- function(object, ...) UseMethod("murphydiag")
 #' 
 #' @export
 murphydiag.default <- function(object, y, type, level = NULL, xnames = NULL, ...) {
-  x <- object
-  rval <- list(
-    x = as.data.frame(x),
-    y = as.vector(y, mode = "numeric"),
-    functional = list(type = as.character(type)))
+  if (identical(length(level), 0L)) level <- NULL
   
-  if (!is.null(xnames)) names(rval$x) <- xnames
-  
-  stopifnot(all(sapply(rval$x, is.numeric)),
-            identical(dim(rval$x)[1L], length(y)),
-            identical(length(rval$functional$type), 1L))
-  
-  stopifnot(!anyNA(x),
-            !anyNA(y))
-  
-  if (rval$functional$type == "prob") {
-    stopifnot(all(x >= 0 & x <= 1),
-              all(y == 0 | y == 1))
-  }
-  
-  if (rval$functional$type %in% c("quantile", "expectile")) {
-    rval$functional$level <- as.numeric(level)
-    
-    with(rval$functional,
-         stopifnot(identical(length(level), 1L),
-                   level > 0 && level < 1))
-    
-    if (identical(rval$functional$level, 0.5)) {
-      if (rval$functional$type == "quantile")
-        rval$functional <- list(type = "median")
-      else
-        rval$functional <- list(type = "mean")
-    }
-  }
-  
-  rval$md_fun <- switch(
-    rval$functional$type,
-    mean = lapply(rval$x, md_mean, rval$y),
-    prob = lapply(rval$x, md_prob, rval$y),
-    median = lapply(rval$x, md_median, rval$y),
-    quantile = lapply(rval$x, md_quant, rval$y, rval$functional$level),
-    expectile = lapply(rval$x, md_expect, rval$y, rval$functional$level),
-    stop(sprintf("unknown functional type: '%s'", rval$functional$type))
+  # checkAttributes()
+  stopifnot(is.numeric(y))
+  stopifnot(!anyNA(y))
+  stopifnot(is.character(type))
+  stopifnot(identical(length(type), 1L))
+  stopifnot(is.null(level) | is.numeric(level))
+  switch(
+    type,
+    prob = stopifnot(
+      all(y == 0 | y == 1),
+      is.null(level)),
+    mean =,
+    median = stopifnot(is.null(level)),
+    quantile =,
+    expectile = stopifnot(
+      identical(length(level), 1L),
+      level > 0 && level < 1),
+    stop(sprintf("unknown functional type: '%s'", type))
   )
   
-  class(rval) <- "murphydiag"
-  rval
+  m <- structure(list(), names = character(0))
+  attr(m, "y") <- y
+  attr(m, "functional")$type <- type
+  attr(m, "functional")$level <- level
+  class(m) <- "murphydiag"
+  
+  if (identical(length(object), 0L)) return(m)
+  as.murphydiag(object, m, xnames = xnames, ...)
 }
 
 #' @rdname murphydiag

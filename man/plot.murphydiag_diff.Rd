@@ -5,17 +5,11 @@
 \title{Plotting Murphy diagram difference objects}
 \usage{
 \method{plot}{murphydiag_diff}(x, ..., thresholds = 500L, type = "l",
-  xlim = NULL, ylim = NULL, main = NULL, xlab = NULL, ylab = NULL,
-  level_ci = 0.95, sd_lags = 0)
+  xlim = NULL, ylim = NULL, main = NULL, xlab = NULL,
+  ylab = NULL, level_ci = 0.95, sd_lags = 0)
 }
 \arguments{
 \item{x}{an object inheriting from the class \code{murphydiag_diff}.}
-
-\item{...}{Graphical parameters (see \code{\link{par}}) and any further
-    arguments of \code{plot}, typically \code{\link{plot.default}}, may also be
-    supplied as arguments to this function.  Hence, the high-level
-    graphics control arguments described under \code{\link{par}} and the
-    arguments to \code{\link{title}} may be supplied to this function.}
 
 \item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
 

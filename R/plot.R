@@ -19,33 +19,43 @@ plot.murphydiag <- function(x, thresholds = 1e4L, right.cont = "both",
   if (is.null(xlab)) xlab <- "threshold"
   if (is.null(ylab)) ylab <- "mean score"
   if (is.null(xlim)) {
-    if (identical(m$functional$type, "prob")) {
+    if (identical(attr(m, "functional")$type, "prob")) {
       xlim <- c(0, 1)
     } else {
-      range_tt <- range(m$x, m$y)
+      range_tt <- range(
+        attr(m, "y"),
+        sapply(m, function(d) range(d$x))
+      )
       xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
     }
   }
-  
-  if (length(thresholds) == 1 && thresholds < length(m$y)) {
-    stopifnot(thresholds > 2L)
-    tt <- seq(xlim[1L], xlim[2L], length.out = thresholds)
-  } else if (length(thresholds) > 1L) {
-    tt <- thresholds
-    tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
-    tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
-  } else {
-    tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
-    tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
-    tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  if (is.null(ylim)) {
+    ylim <- c(0, max(sapply(m, function(d) d$values$max)))
   }
   
-  msfun <- ms_fun(m)
-  xx <- tt
-  yy <- msfun(xx, right.cont)
-  if (right.cont == "both") xx <- rep(tt, each = 2L)
-  matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
-          xlab = xlab, ylab = ylab, ...)
+  # if (length(thresholds) == 1 && thresholds < length(attr(m, "y"))) {
+  #   stopifnot(thresholds > 2L)
+  #   tt <- seq(xlim[1L], xlim[2L], length.out = thresholds)
+  # } else if (length(thresholds) > 1L) {
+  #   tt <- thresholds
+  #   tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+  #   tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  # } else {
+  #   tt <- c(m$x, m$y, recursive = TRUE, use.names = FALSE)
+  #   tt <- tt[tt > xlim[1L] & tt < xlim[2L]]
+  #   tt <- c(xlim[1L], sort(unique(tt)), xlim[2L])
+  # }
+  
+  # msfun <- ms_fun(m)
+  # xx <- tt
+  # yy <- msfun(xx, right.cont)
+  # if (right.cont == "both") xx <- rep(tt, each = 2L)
+  plot(NULL, xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ...)
+  for (i in seq_along(m)) {
+    lines(rep(m[[i]]$knots, each = 2L), do.call(rbind, m[[i]]$values[1:2]))
+  }
+  # matplot(xx, yy, type = type, xlim = xlim, ylim = ylim,
+  #         xlab = xlab, ylab = ylab, ...)
   abline(h = 0, lty = 2)
   
   invisible(m)
@@ -181,11 +191,9 @@ plot.dominance <- function(x, ..., select = NULL, origin = NULL) {
   if (!is.null(select)) x <- x[select]
   class(x) <- NULL
   if (!is.null(origin)) {
-    ind <- lapply(origin, function(o) x[o, ] | x[, o])
-    ind <- if (length(ind) > 1L)  {
-      do.call(`|`, ind) 
-    } else {
-      ind[[1L]]
+    ind <- sapply(origin, function(o) x[o, ] | x[, o])
+    if (isTRUE(ncol(ind) > 1)) {
+      ind <- apply(ind, 1, any)
     }
     x <- x[ind, ind, drop = FALSE]
   }

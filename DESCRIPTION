@@ -10,7 +10,11 @@ Description: Score calculation and printing methods for
   'Of quantiles and expectiles: consistent scoring functions,
   Choquet representations and forecast rankings').
 License: GPL-3
-RoxygenNote: 6.0.1
-Imports: magrittr
+RoxygenNote: 6.1.1
+Imports: magrittr,
+    Rcpp
 Suggests: hasseDiagram
 Enhances: randomForest, quantreg
+LinkingTo: Rcpp
+SystemRequirements: C++11
+Encoding: UTF-8
