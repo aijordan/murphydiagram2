@@ -59,12 +59,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_thin_by
+std::vector<int> C_thin_by(const NumericVector& x, const NumericVector& y, const double& xtol, const double& ytol);
+RcppExport SEXP _murphydiagram2_C_thin_by(SEXP xSEXP, SEXP ySEXP, SEXP xtolSEXP, SEXP ytolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const double& >::type xtol(xtolSEXP);
+    Rcpp::traits::input_parameter< const double& >::type ytol(ytolSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_thin_by(x, y, xtol, ytol));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_murphydiagram2_C_dominates_expect", (DL_FUNC) &_murphydiagram2_C_dominates_expect, 3},
     {"_murphydiagram2_C_dominates_quant", (DL_FUNC) &_murphydiagram2_C_dominates_quant, 3},
     {"_murphydiagram2_C_md_expect", (DL_FUNC) &_murphydiagram2_C_md_expect, 4},
     {"_murphydiagram2_C_md_quant", (DL_FUNC) &_murphydiagram2_C_md_quant, 4},
+    {"_murphydiagram2_C_thin_by", (DL_FUNC) &_murphydiagram2_C_thin_by, 4},
     {NULL, NULL, 0}
 };
 

@@ -4,19 +4,19 @@
 \alias{[.murphydiag}
 \title{Subsetting Murphy diagram objects}
 \usage{
-\method{[}{murphydiag}(m, i)
+\method{[}{murphydiag}(x, i)
 }
 \arguments{
-\item{m}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{an object inheriting from the class \code{'murphydiag'}.}
 
-\item{i}{index specifying elements to extract.}
+\item{i}{index specifying which elements to extract.}
 }
 \value{
-(see \link{[.data.frame}).
+an object inheriting from the class \code{'murphydiag'}.
 }
 \description{
 Subsetting Murphy diagram objects
 }
 \seealso{
-\code{\link{c.murphydiag}}
+\code{\link{c.murphydiag}}.
 }

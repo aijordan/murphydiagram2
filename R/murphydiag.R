@@ -4,55 +4,92 @@ NULL
 
 #' Murphy diagram object
 #' 
-#' \code{murphydiag} constructs and returns an object of
-#' class \code{murphydiag}. It is a generic function with
-#' a \code{default} method, and additional methods for classes
-#' \code{\link[stats]{lm}}, \code{\link[randomForest]{randomForest}}, \code{\link[quantreg]{rq}} (from package \code{quantreg}).
+#' Documentation of the \code{'murphydiag'} object, and its constructors.
 #' 
-#' @param object an object used to select a method.
-#' @param ... further arguments passed to or from other methods.
-#' @return The output is an object of class \code{murphydiag},
-#'   which is a list containing the following components:
-#'   \tabular{ll}{
-#'     \code{x} \tab a data frame of forecasts\cr
-#'     \code{y} \tab a vector of observations\cr
-#'     \code{functional} \tab a list that specifies the forecast functional,
-#'       containing \code{type} and \code{level} (optional).
-#'   }
-#'
-#' @details In the default version, the user specifies all relevant information (forecasts, realizations, 
-#' information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
-#' from a few other packages:
+#' \code{murphydiag} constructs and returns an object inheriting from the
+#' class \code{'murphydiag'}. It is a wrapper function around the
+#' concatenation function described in \code{\link{c.murphydiag}}, which
+#' in turn calls the underlying
+#' coercion methods described in \code{\link{as.murphydiag}}.
+#' 
+#' \code{murphydiag0} constructs an empty \code{'murphydiag'} object from
+#' response values and the type of predictions that are expected.
+#' 
+#' Numeric predictions are ideally come with additional meta information
+#' about their type. Objects of the class \code{'murphydiag'} can be constructed
+#' from probability predictions for binary outcomes (\code{type = "prob"}),
+#' from mean predictions for real-valued outcomes (\code{type = "mean"}),
+#' or from median predictions (\code{type = "median"}). As a
+#' generalization of median predictions, quantile predictions at level \eqn{\alpha}
+#' (e.g., \code{type = "quantile"} and \code{level = 0.5}) are also implemented.
+#' In the same way as a quantile is a generalization of the median, we can
+#' generalize mean predictions by expectile predictions at level \eqn{\alpha}
+#' (e.g., \code{type = "expectile"} and \code{level = 0.5}).
+#' 
+#' When evaluating the quality of predictions, the prediction meta information
+#' influences the set of admissible scoring functions. The elementary scoring
+#' functions used in this package are as follows:
 #' \itemize{
-#' \item \dQuote{lm}, see \code{\link[stats]{lm}}
-#' \item \dQuote{rq}, see \code{\link[quantreg]{rq}}
-#' \item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
+#' \item probability predictions:
+#'   \eqn{s(\theta; x, y) = (1(\theta < x) - 1(\theta < y)) 2(\theta - y)}
+#' \item mean predictions:
+#'   \eqn{s(\theta; x, y) = (1(\theta < x) - 1(\theta < y)) 2(\theta - y)}
+#' \item expectile predictions at level \eqn{\alpha}:
+#'   \eqn{s(\theta, \alpha; x, y) = (1(\theta < x) - 1(\theta < y)) 4|1(y < \theta) - \alpha|(\theta - y)}
 #' }
 #' 
-#' @seealso \code{\link{murphydiag_diff}},
-#'   \code{\link{c.murphydiag}},
-#'   \code{\link{[.murphydiag}},
-#'   \code{\link{plot.murphydiag}}
+#' @param ... objects to be coerced to \code{'murphydiag'} and concatenated
+#' @inheritParams as.murphydiag
 #' 
-#' @export
-murphydiag <- function(object, ...) UseMethod("murphydiag")
+#' @return
+#'  \code{murphydiag} returns a \code{'murphydiag'} object,
+#'  which is a named list-type vector class with attributes
+#'  \tabular{ll}{
+#'    \code{y} \tab a numeric vector of response values to be predicted.\cr
+#'    \code{functional} \tab a list containing the specified \code{type}
+#'    of forecast, and \code{level} if applicable.
+#'  }
+#'  Each entry of a \code{'murphydiag'} object is a list
+#'  with the following components:
+#'  \tabular{ll}{
+#'    \code{x} \tab a numeric vector of predictions for \code{y}.\cr
+#'    \code{knots} \tab a numeric vector of knots
+#'    of the piecewise linear Murphy diagram.\cr
+#'    \code{values} \tab a list containing numeric vectors
+#'    of the left and right sided limits of the Murphy diagram values
+#'    taken in the knots (\code{left} and \code{right}),
+#'    and the maximal value (\code{max}).\cr
+#'  }
+#' 
+#'  \code{murphydiag0} returns an empty \code{'murphydiag'} object
+#'  with attributes \code{y} and \code{functional}.
+#' 
+#' @seealso
+#'  \code{\link{c.murphydiag}},
+#'  \code{\link{[.murphydiag}},
+#'  \code{\link{plot.murphydiag}}.
+#' 
+#' @name murphydiag
+NULL
 
 #' @rdname murphydiag
 #' 
-#' @param y an object convertible by \code{\link{as.numeric}}
-#'   containing observations.
-#' @param type a string specifying the type of forecast,
-#'   e.g. \code{"mean"}.
-#' @param level optional; single value in (0, 1);
-#'   only required for certain values of \code{type}.
-#' @param xnames optional; a character vector with the
-#'   forecasting methods' names.
+#' @export
+murphydiag <- function(..., y = NULL, type = NULL, level = NULL, m = NULL, newdata = NULL) {
+  if ((!missing(y) || !missing(type)) && !missing(m)) {
+    stop("specify 'y' and 'type', or 'm', but not both")
+  }
+  if (is.null(m)) m <- murphydiag0(y, type, level)
+  stopifnot(is.murphydiag(m))
+  
+  c(m[NULL], ..., newdata = newdata)
+}
+
+#' @rdname murphydiag
 #' 
 #' @export
-murphydiag.default <- function(object, y, type, level = NULL, xnames = NULL, ...) {
+murphydiag0 <- function(y, type, level = NULL) {
   if (identical(length(level), 0L)) level <- NULL
-  
-  # checkAttributes()
   stopifnot(is.numeric(y))
   stopifnot(!anyNA(y))
   stopifnot(is.character(type))
@@ -77,44 +114,9 @@ murphydiag.default <- function(object, y, type, level = NULL, xnames = NULL, ...
   attr(m, "functional")$type <- type
   attr(m, "functional")$level <- level
   class(m) <- "murphydiag"
-  
-  if (identical(length(object), 0L)) return(m)
-  as.murphydiag(object, m, xnames = xnames, ...)
+  m
 }
 
-#' @rdname murphydiag
-#' 
-#' @param newdata optional; a data frame as in
-#'   \code{\link{predict.lm}} leading to forecasts
-#'   for \code{newy}.
-#' @param newy optional; a vector of observations
-#'   corresponding to forecasts based on \code{newdata}.
-#'
-#' @importFrom stats predict
-#' 
-#' @export
-murphydiag.lm <- function(object,
-                          newdata = NULL,
-                          newy = NULL,
-                          type = "mean",
-                          xnames = NULL, ...) {
-  if (is.null(xnames)) xnames <- "lm"
-  if (is.null(newy) || is.null(newdata)) {
-    if (!is.null(newy)) warning("ignored 'newy' since 'newdata' is NULL")
-    if (!is.null(newdata)) warning("ignored 'newdata' since 'newy' is NULL")
-    newy <- object$fitted.values + object$residuals
-    newdata <- NULL
-  }
-  if (!type %in% c("mean", "median")) {
-    stop("only forecast types 'mean' and 'median' are implemented")
-  }
-  
-  murphydiag(predict(object, newdata), newy, type, xnames = xnames)
-}
-
-#' @rdname murphydiag
-#' 
-#' @export
 murphydiag.rq <- function(object,
                           newdata = NULL,
                           newy = NULL,
@@ -140,9 +142,6 @@ murphydiag.rq <- function(object,
   }
 }
 
-#' @rdname murphydiag
-#' 
-#' @export
 murphydiag.randomForest <- function(object,
                                     newdata = NULL,
                                     newy = NULL,

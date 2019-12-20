@@ -11,7 +11,7 @@
 \arguments{
 \item{x}{an object inheriting from the class \code{murphydiag_diff}.}
 
-\item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
+\item{...}{other graphical parameters (see \code{\link{par}}).}
 
 \item{type}{character string (length 1 vector) or vector of 1-character
     strings indicating the type of plot for each
@@ -21,15 +21,19 @@
     Characters in \code{type} are cycled through; e.g., \code{"pl"}
     alternately plots points and lines.}
 
-\item{xlim}{ranges of x and y axes, as in \code{\link{plot}}.}
+\item{xlim}{the x limits (x1, x2) of the plot.  Note that \code{x1 > x2}
+    is allowed and leads to a \sQuote{reversed axis}.
 
-\item{ylim}{ranges of x and y axes, as in \code{\link{plot}}.}
+    The default value, \code{NULL}, indicates that the range of the
+    \link{finite} values to be plotted should be used.}
+
+\item{ylim}{the y limits of the plot.}
 
 \item{main}{an overall title for the plot: see \code{\link{title}}.}
 
-\item{xlab}{titles for x and y axes, as in \code{\link{plot}}.}
+\item{xlab}{a label for the x axis, defaults to "threshold".}
 
-\item{ylab}{titles for x and y axes, as in \code{\link{plot}}.}
+\item{ylab}{a label for the y axis, defaults to "mean score".}
 
 \item{level_ci}{level for confidence interval (set to \code{NULL} to omit it)}
 

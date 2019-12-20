@@ -2,40 +2,57 @@
 % Please edit documentation in R/plot.R
 \name{plot.murphydiag}
 \alias{plot.murphydiag}
+\alias{lines.murphydiag}
 \title{Plotting Murphy diagram objects}
 \usage{
-\method{plot}{murphydiag}(x, thresholds = 10000L, right.cont = "both",
-  type = "l", xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
-  ...)
+\method{plot}{murphydiag}(x, resolution = 100, xlim = NULL,
+  ylim = NULL, xlab = NULL, ylab = NULL, ..., add = FALSE,
+  no_baseline = FALSE, empty = FALSE, lty = 1:5, col = 1:6)
+
+\method{lines}{murphydiag}(x, resolution = 100, ..., lty = 1:5,
+  col = 1:6)
 }
 \arguments{
-\item{x}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{an object inheriting from the class \code{'murphydiag'}.}
 
-\item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
+\item{resolution}{determines the smoothness (and accuracy) of the displayed lines:
+\enumerate{
+\item if \code{NULL}: all points returned by \code{as.data.frame(x)} are displayed.
+\item if \code{c(n)} or \code{c(nx, ny)}: only points returned by \code{m_filter(x, window, resolution)} with \code{window = par("usr")} are displayed.
+\item if \code{c(t1, t2, ..., tn)}: only points returned by \code{m_approx(x, thresholds)} with \code{thresholds = resolution} are displayed.
+}
+See \code{\link[as.data.frame.murphydiag]{as.data.frame}}, \code{\link{m_filter}}, \code{\link{m_approx}}.}
 
-\item{right.cont}{logical; whether the diagrams are right-continuous or not. Alternatively: the string "both"}
+\item{xlim}{the x limits (x1, x2) of the plot.  Note that \code{x1 > x2}
+    is allowed and leads to a \sQuote{reversed axis}.
 
-\item{type}{character string (length 1 vector) or vector of 1-character
-    strings indicating the type of plot for each
-    column of \code{y}, see \code{\link{plot}} for all possible
-    \code{type}s.  The first character of \code{type}
-    defines the first plot, the second character the second, etc.
-    Characters in \code{type} are cycled through; e.g., \code{"pl"}
-    alternately plots points and lines.}
+    The default value, \code{NULL}, indicates that the range of the
+    \link{finite} values to be plotted should be used.}
 
-\item{xlim}{ranges of x and y axes, as in \code{\link{plot}}.}
+\item{ylim}{the y limits of the plot.}
 
-\item{ylim}{ranges of x and y axes, as in \code{\link{plot}}.}
+\item{xlab}{a label for the x axis, defaults to "threshold".}
 
-\item{xlab}{titles for x and y axes, as in \code{\link{plot}}.}
+\item{ylab}{a label for the y axis, defaults to "mean score".}
 
-\item{ylab}{titles for x and y axes, as in \code{\link{plot}}.}
+\item{...}{other graphical parameters (see \code{\link{par}}).}
+
+\item{add}{if \code{TRUE}, lines are added to the current plot.}
+
+\item{no_baseline}{if \code{TRUE}, no horizontal baseline at 0 is drawn.}
+
+\item{empty}{if \code{TRUE}, no Murphy diagram lines are drawn.}
+
+\item{lty}{vector of line types, recycled to \code{length(x)}.}
+
+\item{col}{vector of colors, recycled to \code{length(x)}.}
 }
 \description{
 Plotting Murphy diagram objects
 }
 \seealso{
-\code{\link{murphydiag}},
-  \code{\link{c.murphydiag}},
-  \code{\link{[.murphydiag}}
+\code{\link{murphydiag}}.
+  
+  To display only a selection of Murphy diagram lines,
+  consider subsetting (see \code{\link{[.murphydiag}}).
 }

@@ -1,19 +1,28 @@
 #' Combining Murphy diagram objects
 #' 
-#' Combine two or more 'murphydiag' objects that are based on the same observations and type of forecasts.
+#' Combine two or more \code{'murphydiag'} objects that are based on the same observations and type of forecasts. Other objects are coerced by \code{\link{as.murphydiag}} before combination.
+#' 
 #' 
 #' @param ... objects to be concatenated.
+#' @inheritParams as.murphydiag
 #' 
-#' @return An object inheriting from the \code{murphydiag} class.
+#' @return an object inheriting from the class \code{'murphydiag'}.
 #' 
-#' @seealso \code{\link{[.murphydiag}}, \code{\link{murphydiag}}
+#' @seealso \code{\link{as.murphydiag}}, \code{\link{[.murphydiag}}.
 #' 
 #' @export
-c.murphydiag <- function(..., xnames = NULL, tol = sqrt(.Machine$double.eps)) {
+c.murphydiag <- function(..., newdata = NULL, tol = sqrt(.Machine$double.eps)) {
   input <- list(...)
   attribs <- attributes_without_names(input[[1L]])
-  m <- lapply(input, as.murphydiag, m = input[[1L]], tol = tol)
+  
+  m <- lapply(input, as.murphydiag, m = input[[1L]], newdata = newdata, tol = tol)
+  m_lens <- lengths(m, use.names = FALSE)
   m <- unlist(m, recursive = FALSE)
+  m_lens <- m_lens[m_lens > 0L]
+  if (any(duplicated(names(m)))) {
+    names(m) <- paste0("D", rep.int(seq_along(m_lens), m_lens), "_", names(m))
+  }
+  
   attributes(m) <- c(attributes(m), attribs)
   m
 }
@@ -21,20 +30,20 @@ c.murphydiag <- function(..., xnames = NULL, tol = sqrt(.Machine$double.eps)) {
 
 #' Subsetting Murphy diagram objects
 #' 
-#' @param m an object inheriting from the class \code{murphydiag}.
-#' @param i index specifying elements to extract.
+#' @param x an object inheriting from the class \code{'murphydiag'}.
+#' @param i index specifying which elements to extract.
 #' 
-#' @return (see \link{[.data.frame}).
+#' @return an object inheriting from the class \code{'murphydiag'}.
 #' 
-#' @seealso \code{\link{c.murphydiag}}
+#' @seealso \code{\link{c.murphydiag}}.
 #' 
 #' @export
-`[.murphydiag` <- function(m, i) {
-  attribs <- attributes_without_names(m)
-  class(m) <- NULL
-  m <- m[i]
-  attributes(m) <- c(attributes(m), attribs)
-  m
+`[.murphydiag` <- function(x, i) {
+  attribs <- attributes_without_names(x)
+  class(x) <- NULL
+  x <- x[i]
+  attributes(x) <- c(attributes(x), attribs)
+  x
 }
 
 

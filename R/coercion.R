@@ -1,92 +1,138 @@
-#' Converting a murphydiag object into a data.frame
+#' Coerce a Murphy diagram to a Data Frame
 #' 
-#' @inheritParams plot.murphydiag
+#' @param x \code{'murphydiag'} object to be coerced to \code{'data.frame'}
+#' @inheritParams base::as.data.frame
 #' 
-#' @return A \code{data.frame} with three columns: \code{method}, \code{threshold}, \code{score}
+#' @return
+#'  Returns a \code{'data.frame'} with four columns:
+#'  \code{name}, \code{knot}, \code{limit}, \code{value}
+#'  
+#' @details
+#'  Coercion of a \code{'murphydiag'} object to a \code{'data.frame'}
+#'  retains only the relevant information for plotting: the model/forecast
+#'  name, the knots (break points) of the piecewise linear functions,
+#'  and the values taken in the left and right limits in the knots.
+#'  
+#'  Additional information such as the observations, the predictions,
+#'  and the functional type of the predictions is lost. Hence, reversion
+#'  to \code{'murphydiag'} is impossible. When coercing a
+#'  \code{'data.frame'} to a \code{'murphydiag'}, it is assumed that the
+#'  \code{'data.frame'} comprises predictions (from multiple methods).
 #'
+#' 
 #' @export
-as.data.frame.murphydiag <- function(x, ..., thresholds = 1e4L, right.cont = "both") {
-  m <- x
-  if (identical(m$functional$type, "prob")) {
-    range_tt <- c(0, 1)
-    xlim <- range_tt
-  } else {
-    range_tt <- range(m$x, m$y)
-    xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
-  }
+as.data.frame.murphydiag <- function(x, ...) {
+  if (identical(length(x), 0L)) return(data.frame())
+  if (identical(length(attr(x, "y")), 0L)) return(data.frame())
   
-  knots <- knots(m)
-  msfun <- ms_fun(m)
-  if (length(thresholds) == 1L && any(lengths(knots) > thresholds)) {
-    stopifnot(thresholds > 2L)
-    xx <- seq(xlim[1L], xlim[2L], length.out = thresholds)
-    yy <- msfun(xx, right.cont)
-    if (right.cont == "both") xx <- rep(xx, each = 2L)
-    method <- rep(names(m$x), each = length(xx))
-    rval <- data.frame(
-      method = method,
-      threshold = xx,
-      score = c(yy),
-      stringsAsFactors = FALSE
+  df_list <- lapply(seq_along(x), function(i) {
+    d <- x[[i]]
+    data.frame(stringsAsFactors = FALSE,
+      name = names(x)[i],
+      knot = rep(d$knots, each = 2L),
+      limit = c("left", "right"),
+      value = `dim<-`(rbind(d$values$left, d$values$right), NULL)
     )
-  } else if (length(thresholds) > 1L) {
-    xx <- sort(unique(thresholds))
-    yy <- msfun(xx, right.cont)
-    if (right.cont == "both") xx <- rep(xx, each = 2L)
-    method <- rep(names(m$x), each = length(xx))
-    rval <- data.frame(
-      method = method,
-      threshold = xx,
-      score = c(yy),
-      stringsAsFactors = FALSE
-    )
-  } else {
-    yy0 <- msfun(xlim[1L], right.cont, FALSE)
-    yy1 <- msfun("knots", right.cont, FALSE)
-    yy2 <- msfun(xlim[2L], right.cont, FALSE)
-    yy <- mapply(c, yy0, yy1, yy2, SIMPLIFY = FALSE)
-    xx <- mapply(c, xlim[1L], knots, xlim[2L], SIMPLIFY = FALSE)
-    if (right.cont == "both") xx <- mapply(rep, xx, each = 2L, SIMPLIFY = FALSE)
-    rval <- do.call(
-      rbind,
-      lapply(
-        seq_along(knots),
-        function(i) {
-          data.frame(
-            method = names(m$x)[i],
-            threshold = xx[[i]],
-            score = yy[[i]],
-            stringsAsFactors = FALSE
-          )
-        }
-      )
-    )
-  }
-  
-  unique(rval)
+  })
+  do.call(rbind, df_list)
 }
 
+#' Coerce to a Murphy diagram
+#' 
+#' generic function with
+#' a \code{default} method, and additional methods for classes
+#' \code{\link[stats]{lm}}, \code{\link[randomForest]{randomForest}}, \code{\link[quantreg]{rq}} (from package \code{quantreg}).
+#' 
+#' In the default version, the user specifies all relevant information (forecasts, realizations, 
+#' information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
+#' from a few other packages:
+#' \itemize{
+#' \item \dQuote{lm}, see \code{\link[stats]{lm}}
+#' \item \dQuote{rq}, see \code{\link[quantreg]{rq}}
+#' \item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
+#' }
+#' 
+#' @param x any \R object.
+#' @param y a numeric vector of response values to be predicted.
+#' @param type a string specifying the type of forecast; one of \code{"prob"}, \code{"mean"}, \code{"expectile"}, \code{"median"}, \code{"quantile"}.
+#' @param level a single numeric value for the level of the \code{"quantile"} or \code{"expectile"} functional.
+#' @param m an object inheriting from the class \code{'murphydiag'}; alternative to \code{y}, \code{type}, \code{level}.
+#' @param xnames a character vector of prediction names.
+#' @param tol accuracy when comparing \code{y} and \code{level} in \code{'murphydiag'} objects.
+#' @param newdata an optional data frame used as environment in which to evaluate \code{predict} methods of model objects.
+#' 
+#' @details
+#'  as.murphydiag.randomForest converts the classification problem to a binary problem with the first class treated as 1 and all other classes as 0
+#'  
+#' @return
+#'  \code{as.murphydiag} returns a \code{'murphydiag'} object.
+#'  
+#'  \code{is.murphydiag} returns \code{TRUE} if its argument is a
+#'  Murphy diagram, that is, has \code{"murphydiag"} among its classes,
+#'  and \code{FALSE} otherwise.
+#'  
+#'  \code{simplifyFunctional} coerces \code{type} and \code{level} of a
+#'  \code{'murphydiag'} object from \code{"quantile"} to \code{"median"},
+#'  or \code{"expectile"} to \code{"mean"}, if possible. That is,
+#'  when \code{level} is close enough to 0.5.
+#'  
+#'  \code{generalizeFunctional} coerces \code{type} of a \code{'murphydiag'}
+#'  object from \code{"prob"} or \code{"mean"} to \code{"expectile"} with
+#'  \code{level} at 0.5, or \code{"median"} to \code{"quantile"} with
+#'  \code{level} at 0.5.
+#'  
+#' @name as.murphydiag
+NULL
 
+#' @rdname as.murphydiag
+#' 
 #' @export
-as.murphydiag <- function(object, m, ...) UseMethod("as.murphydiag")
+as.murphydiag <- function(x, ...) {
+  UseMethod("as.murphydiag")
+}
 
+#' @rdname as.murphydiag
+#' 
 #' @export
-as.murphydiag.default <- function(object, m, xnames = NULL, ...) {
-  x <- as.data.frame(object)
+as.murphydiag.default <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
+                                  xnames = NULL, ...) {
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) m <- murphydiag0(y, type, level)
+  stopifnot(is.murphydiag(m))
+  
+  x <- as.data.frame(x, optional = TRUE, fix.empty.names = FALSE)
+  
   if (!is.null(xnames)) names(x) <- xnames
+  if (is.null(names(x))) names(x) <- paste0("M", seq_along(x))
+  if (any(empty <- !nzchar(names(x)))) {
+    names(x)[empty] <- paste0("M", seq_along(x))[empty]
+  }
+  if (any(duplicated(names(x)))) {
+    prefix <- paste0("M", seq_along(names(x)), "_")
+    prefix[empty] <- ""
+    names(x) <- paste0(prefix, names(x))
+  }
   
-  as.murphydiag(x, m)
+  as.murphydiag(x, m = m)
 }
 
+#' @rdname as.murphydiag
+#' 
 #' @export
-as.murphydiag.data.frame <- function(object, m, xnames = NULL, ...) {
-  stopifnot(inherits(m, "murphydiag"))
-  y <- attributes(m)$y
+as.murphydiag.data.frame <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
+                                     xnames = NULL, ...) {
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) m <- murphydiag0(y, type, level)
+  stopifnot(is.murphydiag(m))
+  if (is.null(y)) y <- attributes(m)$y
   
   # checkObject()
-  x <- object
   stopifnot(
-    all(sapply(object, is.numeric)),
+    all(sapply(x, is.numeric)),
     identical(nrow(x), 0L) || identical(nrow(x), length(y)),
     !anyNA(x))
   if (attributes(m)$functional$type == "prob") {
@@ -102,13 +148,33 @@ as.murphydiag.data.frame <- function(object, m, xnames = NULL, ...) {
     median = lapply(x, C_md_quant, y, 0.5, ordery),
     quantile = lapply(x, C_md_quant, y, attributes(m)$functional$level, ordery)
   )
+  
+  if (!is.null(xnames)) names(x) <- xnames
+  if (is.null(names(x))) names(x) <- paste0("M", seq_along(x))
+  if (any(empty <- !nzchar(names(x)))) {
+    names(x)[empty] <- paste0("M", seq_along(x))[empty]
+  }
+  if (any(duplicated(names(x)))) {
+    prefix <- paste0("M", seq_along(names(x)), "_")
+    prefix[empty] <- ""
+    names(x) <- paste0(prefix, names(x))
+  }
+  
   attributes(x) <- c(attributes(x), attributes_without_names(m))
   x
 }
 
+#' @rdname as.murphydiag
+#' 
 #' @export
-as.murphydiag.murphydiag <- function(object, m, tol = sqrt(.Machine$double.eps), ...) {
-  stopifnot(inherits(m, "murphydiag"))
+as.murphydiag.murphydiag <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
+                                     tol = sqrt(.Machine$double.eps), ...) {
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) m <- murphydiag0(y, type, level)
+  stopifnot(is.murphydiag(m))
+  
   ref <- attributes_without_names(m)
   convertFunctional <- switch(
     ref$functional$type,
@@ -118,7 +184,7 @@ as.murphydiag.murphydiag <- function(object, m, tol = sqrt(.Machine$double.eps),
     quantile =,
     expectile = generalizeFunctional
   )
-  x <- convertFunctional(object)
+  x <- convertFunctional(x)
   stopifnot(
     isTRUE(all.equal(attributes(x)$y, ref$y, tolerance = tol)),
     identical(attributes(x)$functional, ref$functional)
@@ -126,8 +192,130 @@ as.murphydiag.murphydiag <- function(object, m, tol = sqrt(.Machine$double.eps),
   x
 }
 
+#' @rdname as.murphydiag
+#'
+#' @importFrom stats predict
+#' 
+#' @export
+as.murphydiag.lm <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
+                             xnames = NULL, newdata = NULL, ...) {
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) {
+    if (is.null(y)) y <- x$fitted.values + x$residuals
+    if (is.null(type)) type <- "mean"
+    m <- murphydiag0(y, type, level)
+  }
+  stopifnot(is.murphydiag(m))
+  if (!attr(simplifyFunctional(m), "functional")$type %in% c("mean", "median")) {
+    warning("For objects of class 'lm': ",
+            "Recommended forecast types are 'mean' or 'median'.")
+  }
+  
+  predictions <- list(predict(x, newdata))
+  if (is.null(xnames)) xnames <- "lm"
+  names(predictions) <- xnames
+  c(m[NULL], predictions)
+}
+
+#' @rdname as.murphydiag
+#'
+#' @importFrom stats predict
+#' 
+#' @export
+as.murphydiag.rq <- function(x, y = NULL, type = NULL, level = NULL,
+                             m = NULL, xnames = NULL, newdata = NULL, ...) {
+  if (!requireNamespace("quantreg")) {
+    stop("quantreg package could not be loaded")
+  }
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) {
+    if (is.null(y)) y <- x$y
+    if (is.null(type)) type <- "quantile"
+    if (is.null(level)) level <- x$tau
+    m <- murphydiag0(y, type, level)
+  }
+  stopifnot(is.murphydiag(m))
+  if (!attr(m, "functional")$type %in% c("median", "quantile")) {
+    warning("For objects of class 'rq': ",
+            "Recommended forecast types are 'quantile' or 'median'.")
+  }
+  
+  predictions <- if (is.null(newdata)) {
+    list(predict(x))
+  } else {
+    list(predict(x, newdata))
+  }
+  if (is.null(xnames)) xnames <- "rq"
+  names(predictions) <- xnames
+  c(m[NULL], predictions)
+}
+
+#' @rdname as.murphydiag
+#'
+#' @importFrom stats predict
+#' 
+#' @export
+as.murphydiag.randomForest <- function(x, y = NULL, type = NULL, level = NULL,
+                                       m = NULL, xnames = NULL, newdata = NULL,
+                                       ...) {
+  if (!requireNamespace("randomForest")) {
+    stop("randomForest package could not be loaded")
+  }
+  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
+  }
+  if (is.null(m)) {
+    if (is.null(y)) y <- x$y
+    if (is.null(type)) {
+      if (x$type == "classification") {
+        type <- "prob"
+        if (is.factor(y)) y <- as.numeric(y == levels(y)[1L])
+      } else if (x$type == "regression") {
+        type <- "mean"
+      }
+    }
+    m <- murphydiag0(y, type, level)
+  }
+  stopifnot(is.murphydiag(m))
+  if (!attr(m, "functional")$type %in% c("prob", "mean")) {
+    warning("For objects of class 'rq': ",
+            "Recommended forecast types are 'prob' or 'mean'.")
+  }
+  
+  predictions <- if (x$type == "classification") {
+    if (is.null(newdata)) {
+      predict(x, type = "prob")[, 1L]
+    } else {
+      predict(x, newdata, type = "prob")[, 1L]
+    }
+  } else if (x$type == "regression") {
+    if (is.null(newdata)) {
+      predict(x)
+    } else {
+      predict(x, newdata)
+    }
+  }
+  if (is.null(xnames)) xnames <- "randomForest"
+  names(predictions) <- xnames
+  c(m[NULL], predictions)
+}
+
+#' @rdname as.murphydiag
+#' 
+#' @export
+is.murphydiag <- function(x) {
+  inherits(x, "murphydiag")
+}
+
+#' @rdname as.murphydiag
+#' 
 #' @export
 simplifyFunctional <- function(m, tol = sqrt(.Machine$double.eps)) {
+  stopifnot(is.murphydiag(m))
   if (isTRUE(abs(attr(m, "functional")$level - 0.5) < tol)) {
     attr(m, "functional")$type <- switch(
       attr(m, "functional")$type, quantile = "median", expectile = "mean"
@@ -137,8 +325,11 @@ simplifyFunctional <- function(m, tol = sqrt(.Machine$double.eps)) {
   m
 }
 
+#' @rdname as.murphydiag
+#' 
 #' @export
 generalizeFunctional <- function(m) {
+  stopifnot(is.murphydiag(m))
   type <- attr(m, "functional")$type
   if (isTRUE(type %in% c("median", "prob", "mean"))) {
     attr(m, "functional")$type <- switch(

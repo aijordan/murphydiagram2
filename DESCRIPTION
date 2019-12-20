@@ -11,7 +11,7 @@ Description: Score calculation and printing methods for
   Choquet representations and forecast rankings').
 License: GPL-3
 RoxygenNote: 6.1.1
-Imports: magrittr,
+Imports: magrittr, ggplot2,
     Rcpp
 Suggests: hasseDiagram
 Enhances: randomForest, quantreg

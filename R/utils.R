@@ -1,3 +1,143 @@
+#' Data frame approximations of Murphy diagrams
+#' 
+#' @param m an object inheriting from class \code{'murphydiag'}
+#' @param window a numeric vector of the form \code{c(x1, x2, y1, y2)};
+#'  e.g., \code{range(m)} or \code{par("usr")}
+#' @param resolution a numeric vector of the form \code{c(nx, ny)}
+#'  by which to divide \code{window}
+#' @param thresholds
+#'  a numeric vector of values where interpolation is to take place;
+#'  alternatively, a single number specifying the amount of
+#'  equally spaced points spanning \code{range(m, dim = "knots")}
+#' 
+#' @details 
+#'  The primary purpose of \code{m_filter} and \code{m_approx}
+#'  is to reduce the amount of points in \code{plot(m)}.
+#'  
+#'  \code{m_filter} aims to retain discontinuities and
+#'  a visual impression that is close to the true empirical Murphy diagram.
+#'  
+#'  \code{m_approx} performs smooth linear interpolation between midpoints,
+#'  evaluated at given threshold values on the x-axis.
+#'  
+#'  This is achieved by two different methods:
+#'  
+#'  \code{m_filter} moves sequentially through the rows
+#'  of \code{as.data.frame(m)}. Any point with a value close to 0
+#'  on the y-axis is retained. Otherwise,
+#'  a rectangle with dimensions \code{c(x2 - x1, y2 - y1) / c(nx, ny)}
+#'  is placed, with the latest retained point at its center.
+#'  The next point that falls outside of this rectangle
+#'  (and that point's predecessor) are then retained,
+#'  and any points inbetween are discarded.
+#'  
+#'  \code{m_approx} performs a linear approximation
+#'  on the data set of the knots and the midpoints
+#'  of left-sided and right-sided limits
+#'  of the Murphy diagram values in the respective knots.
+#'  Afterwards that approximation is evaluated
+#'  at user-specified thresholds or
+#'  at a user-specified number of equally spaced points
+#'  spanning \code{range(m, dim = "knots")}.
+#' 
+#' @return
+#'  \code{m_filter} returns a \code{data.frame} with four columns: \code{name}, \code{knot}, \code{limit}, \code{value}. The returned \code{data.frame} comprises a subset of the rows returned by \code{as.data.frame(m)}.
+#'  
+#'  \code{m_approx} returns a \code{data.frame} with three columns: \code{name}, \code{threshold}, \code{value}
+#' 
+#' @seealso
+#'  For an exact \code{data.frame} representation see \code{\link{as.data.frame.murphydiag}}.
+#'  
+#'  \code{\link{range.murphydiag}}
+#' 
+#' @name m_filter
+NULL
+
+#' @rdname m_filter
+#' 
+#' @export
+m_filter <- function(m, window = range(m), resolution = 100) {
+  stopifnot(is.murphydiag(m))
+  stopifnot(is.numeric(window) && identical(length(window), 4L))
+  stopifnot(is.numeric(resolution) && length(resolution) %in% 1:2)
+  r <- c(window[2L] - window[1L], window[4L] - window[3L]) / resolution
+  dflist <- lapply(seq_along(m), function(i) {
+    df <- as.data.frame(m[i])
+    df[C_thin_by(df$knot, df$value, r[1L], r[2L]), ]
+  })
+  do.call(rbind, dflist)
+}
+
+#' @rdname m_filter
+#' 
+#' @importFrom stats approx
+#' 
+#' @export
+m_approx <- function(m, thresholds = 100) {
+  stopifnot(is.murphydiag(m))
+  if (identical(length(m), 0L)) return(data.frame())
+  if (identical(length(attr(m, "y")), 0L)) return(data.frame())
+  
+  if (is.numeric(thresholds) && identical(length(thresholds), 1L)) {
+    r <- range(m, dim = "knots")
+    thresholds <- seq(r[1L], r[2L], length.out = thresholds)
+  }
+  
+  stopifnot(is.numeric(thresholds) && length(thresholds) > 1L)
+  
+  dflist <- lapply(seq_along(m), function(i) {
+    d <- m[[i]]
+    data.frame(stringsAsFactors = FALSE,
+      name = names(m)[i],
+      threshold = thresholds,
+      value = approx(
+        x = d$knots,
+        y = 0.5 * (d$values$left + d$values$right),
+        xout = thresholds,
+        yleft = 0, yright = 0
+      )$y
+    )
+  })
+  do.call(rbind, dflist)
+}
+
+eval_m_at <- function(m, thresholds = NULL) {
+  stopifnot(is.murphydiag(m))
+  if (identical(length(thresholds), 0L)) return(as.data.frame(m))
+  if (identical(length(m), 0L)) return(data.frame())
+  if (identical(length(attr(m, "y")), 0L)) return(data.frame())
+  
+  if (identical(length(thresholds), 1L) && is.atomic(thresholds)) {
+    r <- range(attr(m, "y"), sapply(m, function(d) range(d$x)))
+    thresholds <- seq(r[1], r[2], length.out = thresholds)
+  }
+  
+  stopifnot(is.numeric(thresholds) && length(thresholds) > 1L)
+  stopifnot(!is.unsorted(thresholds))
+  
+  df_list <- lapply(seq_along(m), function(i) {
+    d <- m[[i]]
+    idx <- findInterval(thresholds, d$knots)
+    val <- numeric(length(thresholds))
+    imin <- max(1L, which.max(idx > 0L))
+    imax <- -max(1L, which.max(rev(idx) < length(d$knots))) + length(idx) + 1L
+    if (imin < imax) {
+      idx <- idx[imin:imax]
+      tt <- thresholds[imin:imax]
+      val[imin:imax] <-
+        (d$values$right[idx] * (d$knots[idx + 1L] - tt) +
+           d$values$left[idx + 1L] * (tt - d$knots[idx])) /
+        (d$knots[idx + 1L] - d$knots[idx])
+    }
+    data.frame(stringsAsFactors = FALSE,
+      name = names(m)[i],
+      threshold = thresholds,
+      value = val
+    )
+  })
+  do.call(rbind, df_list)
+}
+
 attributes_without_names <- function(m) {
   attributes(m)[names(attributes(m)) != "names"]
 }
@@ -5,6 +145,66 @@ attributes_without_names <- function(m) {
 #########################################################################
 ##  DEPRECATED
 
+# as.data.frame.murphydiag <- function(x, ..., thresholds = 1e4L, right.cont = "both") {
+#   m <- x
+#   if (identical(m$functional$type, "prob")) {
+#     range_tt <- c(0, 1)
+#     xlim <- range_tt
+#   } else {
+#     range_tt <- range(m$x, m$y)
+#     xlim <- range_tt + c(-.05, .05) * (range_tt[2L] - range_tt[1L])
+#   }
+#   
+#   knots <- knots(m)
+#   msfun <- ms_fun(m)
+#   if (length(thresholds) == 1L && any(lengths(knots) > thresholds)) {
+#     stopifnot(thresholds > 2L)
+#     xx <- seq(xlim[1L], xlim[2L], length.out = thresholds)
+#     yy <- msfun(xx, right.cont)
+#     if (right.cont == "both") xx <- rep(xx, each = 2L)
+#     method <- rep(names(m$x), each = length(xx))
+#     rval <- data.frame(
+#       method = method,
+#       threshold = xx,
+#       score = c(yy),
+#       stringsAsFactors = FALSE
+#     )
+#   } else if (length(thresholds) > 1L) {
+#     xx <- sort(unique(thresholds))
+#     yy <- msfun(xx, right.cont)
+#     if (right.cont == "both") xx <- rep(xx, each = 2L)
+#     method <- rep(names(m$x), each = length(xx))
+#     rval <- data.frame(
+#       method = method,
+#       threshold = xx,
+#       score = c(yy),
+#       stringsAsFactors = FALSE
+#     )
+#   } else {
+#     yy0 <- msfun(xlim[1L], right.cont, FALSE)
+#     yy1 <- msfun("knots", right.cont, FALSE)
+#     yy2 <- msfun(xlim[2L], right.cont, FALSE)
+#     yy <- mapply(c, yy0, yy1, yy2, SIMPLIFY = FALSE)
+#     xx <- mapply(c, xlim[1L], knots, xlim[2L], SIMPLIFY = FALSE)
+#     if (right.cont == "both") xx <- mapply(rep, xx, each = 2L, SIMPLIFY = FALSE)
+#     rval <- do.call(
+#       rbind,
+#       lapply(
+#         seq_along(knots),
+#         function(i) {
+#           data.frame(
+#             method = names(m$x)[i],
+#             threshold = xx[[i]],
+#             score = yy[[i]],
+#             stringsAsFactors = FALSE
+#           )
+#         }
+#       )
+#     )
+#   }
+#   
+#   unique(rval)
+# }
 
 # creators for piece-wise functions
 pwPolyFun <- function(knots, ...) {
@@ -290,7 +490,7 @@ slopes <- function(Fn, ...) {
 # creators for 'md_fun'-list in murphydiag objects
 
 md_expect <- function(x, y, level) {
-  c(list(x = x), C_md_expect(x, y, level, order(x), order(y)))
+  c(list(x = x), C_md_expect(x, y, level, order(y)))
   # coefs <- coef_expect(x, y, level)
   # do.call(pwPolyFun, coefs)
 }

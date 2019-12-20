@@ -2,21 +2,31 @@
 % Please edit documentation in R/coercion.R
 \name{as.data.frame.murphydiag}
 \alias{as.data.frame.murphydiag}
-\title{Converting a murphydiag object into a data.frame}
+\title{Coerce a Murphy diagram to a Data Frame}
 \usage{
-\method{as.data.frame}{murphydiag}(x, ..., thresholds = 10000L,
-  right.cont = "both")
+\method{as.data.frame}{murphydiag}(x, ...)
 }
 \arguments{
-\item{x}{an object inheriting from the class \code{murphydiag}.}
+\item{x}{\code{'murphydiag'} object to be coerced to \code{'data.frame'}}
 
-\item{thresholds}{either the maximum number of thresholds (if length 1) or the values against which to plot}
-
-\item{right.cont}{logical; whether the diagrams are right-continuous or not. Alternatively: the string "both"}
+\item{...}{additional arguments to be passed to or from methods.}
 }
 \value{
-A \code{data.frame} with three columns: \code{method}, \code{threshold}, \code{score}
+Returns a \code{'data.frame'} with four columns:
+ \code{name}, \code{knot}, \code{limit}, \code{value}
 }
 \description{
-Converting a murphydiag object into a data.frame
+Coerce a Murphy diagram to a Data Frame
+}
+\details{
+Coercion of a \code{'murphydiag'} object to a \code{'data.frame'}
+ retains only the relevant information for plotting: the model/forecast
+ name, the knots (break points) of the piecewise linear functions,
+ and the values taken in the left and right limits in the knots.
+ 
+ Additional information such as the observations, the predictions,
+ and the functional type of the predictions is lost. Hence, reversion
+ to \code{'murphydiag'} is impossible. When coercing a
+ \code{'data.frame'} to a \code{'murphydiag'}, it is assumed that the
+ \code{'data.frame'} comprises predictions (from multiple methods).
 }

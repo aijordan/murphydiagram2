@@ -4,18 +4,22 @@
 \alias{c.murphydiag}
 \title{Combining Murphy diagram objects}
 \usage{
-\method{c}{murphydiag}(..., xnames = NULL,
+\method{c}{murphydiag}(..., newdata = NULL,
   tol = sqrt(.Machine$double.eps))
 }
 \arguments{
 \item{...}{objects to be concatenated.}
+
+\item{newdata}{an optional data frame used as environment in which to evaluate \code{predict} methods of model objects.}
+
+\item{tol}{accuracy when comparing \code{y} and \code{level} in \code{'murphydiag'} objects.}
 }
 \value{
-An object inheriting from the \code{murphydiag} class.
+an object inheriting from the class \code{'murphydiag'}.
 }
 \description{
-Combine two or more 'murphydiag' objects that are based on the same observations and type of forecasts.
+Combine two or more \code{'murphydiag'} objects that are based on the same observations and type of forecasts. Other objects are coerced by \code{\link{as.murphydiag}} before combination.
 }
 \seealso{
-\code{\link{[.murphydiag}}, \code{\link{murphydiag}}
+\code{\link{as.murphydiag}}, \code{\link{[.murphydiag}}.
 }

@@ -17,3 +17,7 @@ C_md_quant <- function(x, y, level, ordery) {
     .Call('_murphydiagram2_C_md_quant', PACKAGE = 'murphydiagram2', x, y, level, ordery)
 }
 
+C_thin_by <- function(x, y, xtol, ytol) {
+    .Call('_murphydiagram2_C_thin_by', PACKAGE = 'murphydiagram2', x, y, xtol, ytol)
+}
+

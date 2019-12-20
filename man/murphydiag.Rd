@@ -2,79 +2,88 @@
 % Please edit documentation in R/murphydiag.R
 \name{murphydiag}
 \alias{murphydiag}
-\alias{murphydiag.default}
-\alias{murphydiag.lm}
-\alias{murphydiag.rq}
-\alias{murphydiag.randomForest}
+\alias{murphydiag0}
 \title{Murphy diagram object}
 \usage{
-murphydiag(object, ...)
+murphydiag(..., y = NULL, type = NULL, level = NULL, m = NULL,
+  newdata = NULL)
 
-\method{murphydiag}{default}(object, y, type, level = NULL,
-  xnames = NULL, ...)
-
-\method{murphydiag}{lm}(object, newdata = NULL, newy = NULL,
-  type = "mean", xnames = NULL, ...)
-
-\method{murphydiag}{rq}(object, newdata = NULL, newy = NULL,
-  xnames = NULL, ...)
-
-\method{murphydiag}{randomForest}(object, newdata = NULL, newy = NULL,
-  xnames = NULL, ...)
+murphydiag0(y, type, level = NULL)
 }
 \arguments{
-\item{object}{an object used to select a method.}
+\item{...}{objects to be coerced to \code{'murphydiag'} and concatenated}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{y}{a numeric vector of response values to be predicted.}
 
-\item{y}{an object convertible by \code{\link{as.numeric}}
-containing observations.}
+\item{type}{a string specifying the type of forecast; one of \code{"prob"}, \code{"mean"}, \code{"expectile"}, \code{"median"}, \code{"quantile"}.}
 
-\item{type}{a string specifying the type of forecast,
-e.g. \code{"mean"}.}
+\item{level}{a single numeric value for the level of the \code{"quantile"} or \code{"expectile"} functional.}
 
-\item{level}{optional; single value in (0, 1);
-only required for certain values of \code{type}.}
+\item{m}{an object inheriting from the class \code{'murphydiag'}; alternative to \code{y}, \code{type}, \code{level}.}
 
-\item{xnames}{optional; a character vector with the
-forecasting methods' names.}
-
-\item{newdata}{optional; a data frame as in
-\code{\link{predict.lm}} leading to forecasts
-for \code{newy}.}
-
-\item{newy}{optional; a vector of observations
-corresponding to forecasts based on \code{newdata}.}
+\item{newdata}{an optional data frame used as environment in which to evaluate \code{predict} methods of model objects.}
 }
 \value{
-The output is an object of class \code{murphydiag},
-  which is a list containing the following components:
-  \tabular{ll}{
-    \code{x} \tab a data frame of forecasts\cr
-    \code{y} \tab a vector of observations\cr
-    \code{functional} \tab a list that specifies the forecast functional,
-      containing \code{type} and \code{level} (optional).
-  }
+\code{murphydiag} returns a \code{'murphydiag'} object,
+ which is a named list-type vector class with attributes
+ \tabular{ll}{
+   \code{y} \tab a numeric vector of response values to be predicted.\cr
+   \code{functional} \tab a list containing the specified \code{type}
+   of forecast, and \code{level} if applicable.
+ }
+ Each entry of a \code{'murphydiag'} object is a list
+ with the following components:
+ \tabular{ll}{
+   \code{x} \tab a numeric vector of predictions for \code{y}.\cr
+   \code{knots} \tab a numeric vector of knots
+   of the piecewise linear Murphy diagram.\cr
+   \code{values} \tab a list containing numeric vectors
+   of the left and right sided limits of the Murphy diagram values
+   taken in the knots (\code{left} and \code{right}),
+   and the maximal value (\code{max}).\cr
+ }
+
+ \code{murphydiag0} returns an empty \code{'murphydiag'} object
+ with attributes \code{y} and \code{functional}.
 }
 \description{
-\code{murphydiag} constructs and returns an object of
-class \code{murphydiag}. It is a generic function with
-a \code{default} method, and additional methods for classes
-\code{\link[stats]{lm}}, \code{\link[randomForest]{randomForest}}, \code{\link[quantreg]{rq}} (from package \code{quantreg}).
+Documentation of the \code{'murphydiag'} object, and its constructors.
 }
 \details{
-In the default version, the user specifies all relevant information (forecasts, realizations, 
-information on the type of forecast) manually. Furthermore, \code{murphydiag} accepts fitted model objects
-from a few other packages:
+\code{murphydiag} constructs and returns an object inheriting from the
+class \code{'murphydiag'}. It is a wrapper function around the
+concatenation function described in \code{\link{c.murphydiag}}, which
+in turn calls the underlying
+coercion methods described in \code{\link{as.murphydiag}}.
+
+\code{murphydiag0} constructs an empty \code{'murphydiag'} object from
+response values and the type of predictions that are expected.
+
+Numeric predictions are ideally come with additional meta information
+about their type. Objects of the class \code{'murphydiag'} can be constructed
+from probability predictions for binary outcomes (\code{type = "prob"}),
+from mean predictions for real-valued outcomes (\code{type = "mean"}),
+or from median predictions (\code{type = "median"}). As a
+generalization of median predictions, quantile predictions at level \eqn{\alpha}
+(e.g., \code{type = "quantile"} and \code{level = 0.5}) are also implemented.
+In the same way as a quantile is a generalization of the median, we can
+generalize mean predictions by expectile predictions at level \eqn{\alpha}
+(e.g., \code{type = "expectile"} and \code{level = 0.5}).
+
+When evaluating the quality of predictions, the prediction meta information
+influences the set of admissible scoring functions. The elementary scoring
+functions used in this package are as follows:
 \itemize{
-\item \dQuote{lm}, see \code{\link[stats]{lm}}
-\item \dQuote{rq}, see \code{\link[quantreg]{rq}}
-\item \dQuote{randomForest}, see \code{\link[randomForest]{randomForest}}
+\item probability predictions:
+  \eqn{s(\theta; x, y) = (1(\theta < x) - 1(\theta < y)) 2(\theta - y)}
+\item mean predictions:
+  \eqn{s(\theta; x, y) = (1(\theta < x) - 1(\theta < y)) 2(\theta - y)}
+\item expectile predictions at level \eqn{\alpha}:
+  \eqn{s(\theta, \alpha; x, y) = (1(\theta < x) - 1(\theta < y)) 4|1(y < \theta) - \alpha|(\theta - y)}
 }
 }
 \seealso{
-\code{\link{murphydiag_diff}},
-  \code{\link{c.murphydiag}},
-  \code{\link{[.murphydiag}},
-  \code{\link{plot.murphydiag}}
+\code{\link{c.murphydiag}},
+ \code{\link{[.murphydiag}},
+ \code{\link{plot.murphydiag}}.
 }
