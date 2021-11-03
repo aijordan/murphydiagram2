@@ -11,18 +11,23 @@
 #' @seealso \code{\link{as.murphydiag}}, \code{\link{[.murphydiag}}.
 #' 
 #' @export
-c.murphydiag <- function(..., newdata = NULL, tol = sqrt(.Machine$double.eps)) {
+c.murphydiag <- function(...,
+                         tol = sqrt(.Machine$double.eps),
+                         newdata = NULL) {
+    
   input <- list(...)
-  attribs <- attributes_without_names(input[[1L]])
+  proto <- input[[1L]]
+  attribs <- attributes_without_names(proto)
   
-  m <- lapply(input, as.murphydiag, m = input[[1L]], newdata = newdata, tol = tol)
-  m_lens <- lengths(m, use.names = FALSE)
+  m <- purrr::map(
+    .x = input,
+    .f = as.murphydiag,
+    m = proto,
+    .name_repair = "minimal",
+    tol = tol,
+    newdata = newdata)
   m <- unlist(m, recursive = FALSE)
-  m_lens <- m_lens[m_lens > 0L]
-  if (any(duplicated(names(m)))) {
-    names(m) <- paste0("D", rep.int(seq_along(m_lens), m_lens), "_", names(m))
-  }
-  
+  names(m) <- vctrs::vec_as_names(names(m), repair = "unique")
   attributes(m) <- c(attributes(m), attribs)
   m
 }

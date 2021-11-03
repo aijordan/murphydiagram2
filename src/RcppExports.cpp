@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // C_dominates_expect
 bool C_dominates_expect(const List& x, const List& y, const double tol);
 RcppExport SEXP _murphydiagram2_C_dominates_expect(SEXP xSEXP, SEXP ySEXP, SEXP tolSEXP) {

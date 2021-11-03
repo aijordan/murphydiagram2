@@ -94,82 +94,112 @@ as.murphydiag <- function(x, ...) {
 #' @rdname as.murphydiag
 #' 
 #' @export
-as.murphydiag.default <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
-                                  xnames = NULL, ...) {
-  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
-    stop("specify 'y', 'type', and 'level', or 'm', but not both")
-  }
-  if (is.null(m)) m <- murphydiag0(y, type, level)
-  stopifnot(is.murphydiag(m))
-  
-  x <- as.data.frame(x, optional = TRUE, fix.empty.names = FALSE)
-  
-  if (!is.null(xnames)) names(x) <- xnames
-  if (is.null(names(x))) names(x) <- paste0("M", seq_along(x))
-  if (any(empty <- !nzchar(names(x)))) {
-    names(x)[empty] <- paste0("M", seq_along(x))[empty]
-  }
-  if (any(duplicated(names(x)))) {
-    prefix <- paste0("M", seq_along(names(x)), "_")
-    prefix[empty] <- ""
-    names(x) <- paste0(prefix, names(x))
-  }
-  
-  as.murphydiag(x, m = m)
+is.murphydiag <- function(x) {
+  inherits(x, "murphydiag")
 }
 
 #' @rdname as.murphydiag
 #' 
 #' @export
-as.murphydiag.data.frame <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
-                                     xnames = NULL, ...) {
-  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+as.murphydiag.default <- function(x,
+                                  y = NULL,
+                                  type = NULL,
+                                  level = NULL,
+                                  m = NULL,
+                                  .name_repair = "unique",
+                                  ...) {
+    
+  if ((!is.null(y) || !is.null(type) || !is.null(level)) && !is.null(m)) {
     stop("specify 'y', 'type', and 'level', or 'm', but not both")
   }
   if (is.null(m)) m <- murphydiag0(y, type, level)
   stopifnot(is.murphydiag(m))
-  if (is.null(y)) y <- attributes(m)$y
   
-  # checkObject()
-  stopifnot(
-    all(sapply(x, is.numeric)),
-    identical(nrow(x), 0L) || identical(nrow(x), length(y)),
-    !anyNA(x))
-  if (attributes(m)$functional$type == "prob") {
-    stopifnot(all(x >= 0 | x <= 1))
+  x <- as.data.frame(x, optional = TRUE, fix.empty.names = FALSE) |>
+    tibble::as_tibble(.name_repair = .name_repair)
+  
+  as.murphydiag.data.frame(
+    x,
+    m = m,
+    .name_repair = .name_repair,
+    ...
+  )
+}
+
+#' @rdname as.murphydiag
+#' 
+#' @export
+as.murphydiag.data.frame <- function(x,
+                                     y = NULL,
+                                     type = NULL,
+                                     level = NULL, 
+                                     m = NULL,
+                                     .name_repair = "unique",
+                                     ...) {
+  
+  if ((!is.null(y) || !is.null(type) || !is.null(level)) && !is.null(m)) {
+    stop("specify 'y', 'type', and 'level', or 'm', but not both")
   }
+  if (is.null(m)) m <- murphydiag0(y, type, level)
+  stopifnot(is.murphydiag(m))
+  if (is.null(y)) y <- attr(m, "y")
+  attribs <- attributes_without_names(m)
+  
+  stopifnot(all(sapply(x, is.numeric)))
+  stopifnot(identical(nrow(x), 0L) || identical(nrow(x), length(y)))
+  
+  x <- tibble::as_tibble(x, .name_repair = .name_repair)
   
   ordery <- order(y)
-  x <- switch(
-    attributes(m)$functional$type,
-    prob = ,
-    mean = lapply(x, C_md_expect, y, 0.5, ordery),
-    expectile = lapply(x, C_md_expect, y, attributes(m)$functional$level, ordery),
-    median = lapply(x, C_md_quant, y, 0.5, ordery),
-    quantile = lapply(x, C_md_quant, y, attributes(m)$functional$level, ordery)
+  m <- lapply(
+    X = x,
+    FUN = murphydiag_numeric,
+    m = m
   )
   
-  if (!is.null(xnames)) names(x) <- xnames
-  if (is.null(names(x))) names(x) <- paste0("M", seq_along(x))
-  if (any(empty <- !nzchar(names(x)))) {
-    names(x)[empty] <- paste0("M", seq_along(x))[empty]
-  }
-  if (any(duplicated(names(x)))) {
-    prefix <- paste0("M", seq_along(names(x)), "_")
-    prefix[empty] <- ""
-    names(x) <- paste0(prefix, names(x))
-  }
-  
-  attributes(x) <- c(attributes(x), attributes_without_names(m))
-  x
+  attributes(m) <- c(attributes(m), attribs)
+  m
 }
+  
+# returns an unnamed murphydiag
+murphydiag_numeric <- function(x, m = NULL, ...) {
+  
+  stopifnot(is.murphydiag(m))
+  y <- attr(m, "y")
+  ordery <- attr(m, "y_order")
+  ftype <- attr(m, "functional")$type
+  flevel <- attr(m, "functional")$level
+  
+  stopifnot(identical(length(x), length(y)))
+  if (ftype == "prob") {
+    stopifnot(all(x >= 0 | x <= 1))
+  }
+  stopifnot(!anyNA(x))
+  
+  switch(
+    ftype,
+    prob = ,
+    mean =      C_md_expect(x, y,    0.5, ordery),
+    expectile = C_md_expect(x, y, flevel, ordery),
+    median =    C_md_quant( x, y,    0.5, ordery),
+    quantile =  C_md_quant( x, y, flevel, ordery)
+  )
+  
+}
+  
 
 #' @rdname as.murphydiag
 #' 
 #' @export
-as.murphydiag.murphydiag <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
-                                     tol = sqrt(.Machine$double.eps), ...) {
-  if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
+as.murphydiag.murphydiag <- function(x,
+                                     y = NULL,
+                                     type = NULL,
+                                     level = NULL,
+                                     m = NULL,
+                                     tol = sqrt(.Machine$double.eps),
+                                     ...) {
+    
+  if ((!is.null(y) || !is.null(type) || !is.null(level)) && !is.null(m)) {
     stop("specify 'y', 'type', and 'level', or 'm', but not both")
   }
   if (is.null(m)) m <- murphydiag0(y, type, level)
@@ -196,7 +226,7 @@ as.murphydiag.murphydiag <- function(x, y = NULL, type = NULL, level = NULL, m =
 #'
 #' @importFrom stats predict
 #' 
-#' @export
+#'
 as.murphydiag.lm <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
                              xnames = NULL, newdata = NULL, ...) {
   if ((!missing(y) || !missing(type) || !missing(level)) && !missing(m)) {
@@ -223,7 +253,7 @@ as.murphydiag.lm <- function(x, y = NULL, type = NULL, level = NULL, m = NULL,
 #'
 #' @importFrom stats predict
 #' 
-#' @export
+#'
 as.murphydiag.rq <- function(x, y = NULL, type = NULL, level = NULL,
                              m = NULL, xnames = NULL, newdata = NULL, ...) {
   if (!requireNamespace("quantreg")) {
@@ -258,7 +288,7 @@ as.murphydiag.rq <- function(x, y = NULL, type = NULL, level = NULL,
 #'
 #' @importFrom stats predict
 #' 
-#' @export
+#'
 as.murphydiag.randomForest <- function(x, y = NULL, type = NULL, level = NULL,
                                        m = NULL, xnames = NULL, newdata = NULL,
                                        ...) {
@@ -302,13 +332,6 @@ as.murphydiag.randomForest <- function(x, y = NULL, type = NULL, level = NULL,
   if (is.null(xnames)) xnames <- "randomForest"
   names(predictions) <- xnames
   c(m[NULL], predictions)
-}
-
-#' @rdname as.murphydiag
-#' 
-#' @export
-is.murphydiag <- function(x) {
-  inherits(x, "murphydiag")
 }
 
 #' @rdname as.murphydiag
